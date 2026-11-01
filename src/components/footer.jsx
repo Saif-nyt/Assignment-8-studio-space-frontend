@@ -52,14 +52,14 @@ const socialLinks = [
 function FooterLinks({ title, links }) {
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white mb-6">{title}</h3>
+      <h3 className="text-base font-semibold text-white mb-6">{title}</h3>
 
-      <ul className="space-y-4">
+      <ul className="space-y-5">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="text-sm text-slate-400 hover:text-amber-400 transition-colors duration-200"
+              className="text-base text-slate-400 hover:text-amber-400 transition-colors duration-200"
             >
               {link.label}
             </Link>
@@ -73,7 +73,7 @@ function FooterLinks({ title, links }) {
 export default function Footer() {
   return (
     <footer className="relative overflow-hidden bg-[#090d14] text-slate-300 border-t border-white/[0.07]">
-      {/* Background ambient glow */}
+      {/* Background Ambient Glow */}
       <div className="absolute -top-40 left-1/4 w-96 h-96 bg-amber-500/[0.045] blur-[120px] rounded-full pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-6 sm:px-8">
@@ -82,7 +82,7 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-5 space-y-7">
             <Link href="/" className="inline-flex items-center gap-3 group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center text-[#111827] shadow-lg shadow-amber-500/10 group-hover:scale-105 transition-transform duration-300">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-300 to-amber-600 flex items-center justify-center text-[#111827] shadow-lg shadow-amber-500/10 group-hover:scale-105 transition-transform duration-300">
                 <svg
                   className="w-6 h-6"
                   viewBox="0 0 24 24"
@@ -102,19 +102,19 @@ export default function Footer() {
                 </svg>
               </div>
 
-              <span className="text-2xl font-bold tracking-tight text-white">
+              <span className="text-3xl font-bold tracking-tight text-white">
                 Studio<span className="text-amber-400">Space</span>
               </span>
             </Link>
 
-            <p className="text-sm leading-7 text-slate-400 max-w-md">
+            <p className="text-base leading-8 text-slate-400 max-w-md">
               Discover and book inspiring creative spaces by the hour. From
               sunlit lofts to professional soundstages, find the perfect space
               for your next idea.
             </p>
 
             {/* Social Links */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pt-1">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -122,7 +122,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.025] flex items-center justify-center text-slate-400 hover:text-amber-400 hover:border-amber-400/40 hover:bg-amber-400/[0.06] transition-all duration-200"
+                  className="w-11 h-11 rounded-xl border border-white/10 bg-white/[0.025] flex items-center justify-center text-slate-400 hover:text-amber-400 hover:border-amber-400/40 hover:bg-amber-400/[0.06] transition-all duration-200"
                 >
                   {social.icon}
                 </a>
@@ -140,18 +140,18 @@ export default function Footer() {
             <FooterLinks title="For space owners" links={hostLinks} />
 
             {/* Host CTA */}
-            <div className="mt-9 p-5 rounded-2xl border border-white/[0.08] bg-white/[0.025]">
-              <p className="text-sm font-medium text-white">
+            <div className="mt-9 p-6 rounded-2xl border border-white/[0.08] bg-white/[0.025]">
+              <p className="text-base font-semibold text-white">
                 Have a creative space?
               </p>
 
-              <p className="text-xs text-slate-400 mt-2 leading-5">
+              <p className="text-sm text-slate-400 mt-3 leading-7">
                 Turn your space into an opportunity. Start hosting today.
               </p>
 
               <Link
                 href="/add-studio"
-                className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+                className="inline-flex items-center gap-2 mt-5 text-base font-semibold text-amber-400 hover:text-amber-300 transition-colors"
               >
                 Become a host
                 <span aria-hidden="true">→</span>
@@ -161,12 +161,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t border-white/[0.07] py-7 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500">
+        <div className="border-t border-white/[0.07] py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
+          <p className="text-sm text-slate-500">
             © {new Date().getFullYear()} StudioSpace. All rights reserved.
           </p>
 
-          <div className="flex items-center gap-6 text-xs text-slate-500">
+          <div className="flex items-center gap-6 text-sm text-slate-500">
             <Link
               href="/privacy"
               className="hover:text-white transition-colors"
@@ -179,7 +179,7 @@ export default function Footer() {
             </Link>
           </div>
 
-          <p className="text-xs text-slate-500">Made for creative minds.</p>
+          <p className="text-sm text-slate-500">Made for creative minds.</p>
         </div>
       </div>
     </footer>

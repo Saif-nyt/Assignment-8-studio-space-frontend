@@ -1,5 +1,6 @@
 
 import { Banner } from "@/components/banner"
+import HowBookingWorks from "@/components/HowBookingWorks";
 
 
 import React from 'react';
@@ -8,7 +9,7 @@ const page = () => {
   return (
     <div>
       <Banner />
-    </div>
+<HowBookingWorks/>    </div>
   );
 };
 

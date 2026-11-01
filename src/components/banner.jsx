@@ -75,7 +75,7 @@ const Banner = () => {
 
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,180,0,0.12),_transparent_36%)]" />
 
-      <main className="relative z-20 mx-auto flex max-w-[1440px] items-center px-5 pb-20 pt-14 lg:px-8 lg:pb-12 lg:pt-24">
+      <main className="relative z-20 mx-auto flex max-w-[1600px] items-center px-5 pb-20 pt-14 lg:px-8 lg:pb-12 lg:pt-24">
         <div className="grid w-full items-end gap-10 lg:grid-cols-[1.25fr_0.75fr]">
           <div className="max-w-[720px]">
             <Badge className="border-[#f7b21a]/40 bg-[#f7b21a]/10 px-3 py-1 text-[0.68rem] font-semibold tracking-[0.28rem] text-[#f9d77f]">

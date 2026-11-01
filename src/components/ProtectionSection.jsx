@@ -66,7 +66,7 @@ export default function ProtectionSection() {
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-amber-900/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-900/15 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div className="relative max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Headline & Description */}
         <div className="lg:col-span-5 space-y-6">
           <span className="text-[#22d3ee] text-xs font-semibold tracking-wider uppercase block">

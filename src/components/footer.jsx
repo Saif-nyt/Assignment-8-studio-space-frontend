@@ -70,13 +70,17 @@ function FooterLinks({ title, links }) {
   );
 }
 
-export default function Footer() {
+export default async function Footer() {
+  "use cache";
+
+  const year = new Date().getFullYear();
+
   return (
     <footer className="relative overflow-hidden bg-[#090d14] text-slate-300 border-t border-white/[0.07]">
       {/* Background Ambient Glow */}
       <div className="absolute -top-40 left-1/4 w-96 h-96 bg-amber-500/[0.045] blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-6 sm:px-8">
+      <div className="relative max-w-[1600px] mx-auto px-6 sm:px-8">
         {/* Main Footer */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-16 py-16 lg:py-20">
           {/* Brand Column */}
@@ -163,7 +167,7 @@ export default function Footer() {
         {/* Bottom Copyright */}
         <div className="border-t border-white/[0.07] py-8 flex flex-col sm:flex-row items-center justify-between gap-5">
           <p className="text-sm text-slate-500">
-            © {new Date().getFullYear()} StudioSpace. All rights reserved.
+            © {year} StudioSpace. All rights reserved.
           </p>
 
           <div className="flex items-center gap-6 text-sm text-slate-500">

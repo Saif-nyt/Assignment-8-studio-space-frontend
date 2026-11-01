@@ -5,7 +5,7 @@ import Link from "next/link";
 function Navbar() {
   return (
     <header className="relative z-30 w-full border-b border-white/10 bg-[#020d17]/80 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-4 lg:px-8">
+      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-4 lg:px-8">
         <Link href="/" className="flex items-center gap-3 text-white">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7b21a] text-[#0b1220] shadow-[0_0_25px_rgba(247,178,26,0.5)]">
             <IconCamera size={18} stroke={2.5} />

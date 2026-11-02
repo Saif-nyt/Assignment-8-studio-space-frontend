@@ -70,8 +70,27 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleSignIn = () => {
-    setError("Google sign-in is not connected yet. Use the form below.");
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      await authClient.signIn.social(
+        {
+          provider: "google",
+          callbackURL: "/",
+        },
+        {
+          onError: (ctx) => {
+            setError(ctx.error.message || "Google sign-in failed.");
+          },
+        }
+      );
+    } catch {
+      setError("Google sign-in failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {

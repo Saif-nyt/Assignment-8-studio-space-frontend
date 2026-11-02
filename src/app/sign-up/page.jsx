@@ -103,8 +103,27 @@ export default function SignUpPage() {
     }
   }
 
-  const handleGoogleSignUp = () => {
-    setError("Google sign-up is not connected yet. Use the form below.");
+  const handleGoogleSignUp = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      await authClient.signIn.social(
+        {
+          provider: "google",
+          callbackURL: "/",
+        },
+        {
+          onError: (ctx) => {
+            setError(ctx.error.message || "Google sign-up failed.");
+          },
+        }
+      );
+    } catch {
+      setError("Google sign-up failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

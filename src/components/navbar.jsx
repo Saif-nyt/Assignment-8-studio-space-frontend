@@ -149,7 +149,7 @@ function Navbar() {
               {open && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-[calc(100%+10px)] z-50 w-[300px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-white/10 bg-[#0d1014] text-left shadow-[0_24px_70px_rgba(0,0,0,0.6)]"
+                  className="absolute right-0 top-[calc(100%+10px)] z-50 w-full max-w-[300px] overflow-hidden rounded-lg border border-white/10 bg-[#0d1014] text-left shadow-[0_24px_70px_rgba(0,0,0,0.6)]"
                 >
                   <div className="px-4 pb-3.5 pt-4">
                     <p className="truncate text-[15px] font-semibold text-white">

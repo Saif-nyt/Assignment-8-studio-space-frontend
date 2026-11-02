@@ -52,7 +52,7 @@ export default function FeaturedStudios() {
 
   if (loading) {
     return (
-      <section className="bg-[#090b10] px-6 py-16 text-white md:px-10">
+      <section className="bg-[#090b10] px-6 py-16 text-white md:px-10 max-w-2xl mx-auto">
         <div className="mx-auto max-w-[1600px]">
           <p className="mb-8 text-sm text-slate-400">
             Loading featured studios...
@@ -73,14 +73,14 @@ export default function FeaturedStudios() {
 
   if (error) {
     return (
-      <section className="bg-[#090b10] px-6 py-16 text-center text-white">
+      <section className="bg-[#090b10] px-6 py-16 text-center text-white max-w-2xl mx-auto">
         <p className="text-slate-400">{error}</p>
       </section>
     );
   }
 
   return (
-    <section className="bg-[#090b10] px-6 py-16 text-white md:px-10">
+    <section className="bg-[#090b10] px-6 py-16 text-white md:px-10 max-w-3xl mx-auto">
       <div className="mx-auto max-w-[1600px]">
         {/* Section Header */}
         <div className="mb-10 flex flex-wrap items-end justify-between gap-5">

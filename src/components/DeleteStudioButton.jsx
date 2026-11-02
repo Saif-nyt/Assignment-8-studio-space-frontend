@@ -39,7 +39,8 @@ export default function DeleteStudioButton({ studioId }) {
       setLoading(true);
 
       const res = await fetch(
-        `http://localhost:5001/delete-studio/${studioId}`,
+        `process.env.BACKEND_URL/delete-studio/${studioId}` ||
+          `http://localhost:5001/delete-studio/${studioId}`,
         {
           method: "DELETE",
           credentials: "include",

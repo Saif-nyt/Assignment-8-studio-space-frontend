@@ -19,11 +19,11 @@ export default function CancelBookingButton({ bookingId }) {
 
     try {
       const res = await fetch(
-        `http://localhost:5001/my-booking/${bookingId}`,
+        `process.env.BACKEND_URL/${bookingid}`||` http://localhost:5001/my-booking/${bookingId}`,
         {
           method: "DELETE",
           credentials: "include",
-        }
+        },
       );
 
       if (!res.ok) {

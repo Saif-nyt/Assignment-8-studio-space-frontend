@@ -12,7 +12,8 @@ import {
 } from "@tabler/icons-react";
 import { authClient } from "@/lib/auth-client";
 
-const API_BASE_URL = "http://localhost:5001";
+const API_BASE_URL =
+  process.env.BACKEND_URL || "http://localhost:5001";
 
 const emptyStats = {
   studios: 0,

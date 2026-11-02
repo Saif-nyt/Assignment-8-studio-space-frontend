@@ -6,11 +6,15 @@ export const dynamic = "force-dynamic";
 export default async function StudioDetailsPage({ params }) {
   const { id } = await params;
 
-  const res = await fetch(`http://localhost:5001/studios/${id}`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-  });
+  const res = await fetch(
+    `process.env.BACKEND_URL/studios/${id}` ||
+      `http://localhost:5001/studios/${id}`,
+    {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    },
+  );
 
   if (!res.ok) {
     throw new Error("Failed to fetch studio details");

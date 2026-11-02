@@ -11,10 +11,11 @@ const fallbackImage =
 async function getBookings(email) {
   try {
     const res = await fetch(
-      `http://localhost:5001/my-bookings/${encodeURIComponent(email)}`,
+      `process.env.BACKEND_URL/my-bookings/${encodeURIComponent(email)}` ||
+        `http://localhost:5001/my-bookings/${encodeURIComponent(email)}`,
       {
         cache: "no-store",
-      }
+      },
     );
 
     if (!res.ok) {

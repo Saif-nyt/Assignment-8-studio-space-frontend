@@ -98,9 +98,13 @@ const Page = async () => {
   let fetchError = false;
 
   try {
-    const res = await fetch("http://localhost:5001/studios", {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `process.env.BACKEND_URL/studios` ||
+        `http://localhost:5001/studios`,
+      {
+        cache: "no-store",
+      },
+    );
 
     if (!res.ok) {
       throw new Error(`Failed to fetch studios: ${res.status}`);

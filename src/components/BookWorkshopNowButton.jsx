@@ -54,7 +54,7 @@ export default function BookWorkshopNowButton({
             totalAmount,
         };
         try {
-            const res = await fetch("http://localhost:5001/bookings", {
+            const res = await fetch(`${process.env.BACKEND_URL || "http://localhost:5001"}/bookings`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

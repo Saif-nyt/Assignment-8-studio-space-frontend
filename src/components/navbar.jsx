@@ -11,6 +11,8 @@ import {
   IconList,
   IconLogout,
   IconMenu2,
+  IconMoon,
+  IconSun,
 } from "@tabler/icons-react";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -51,10 +53,29 @@ function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const menuRef = useRef(null);
+  const mobileMenuRef = useRef(null);
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState("dark");
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("studio-space-theme");
+    const preferredTheme =
+      savedTheme || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+
+    setTheme(preferredTheme);
+    document.documentElement.classList.toggle("dark", preferredTheme === "dark");
+    document.documentElement.classList.toggle("light", preferredTheme === "light");
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.classList.toggle("light", theme === "light");
+    document.documentElement.style.colorScheme = theme;
+    localStorage.setItem("studio-space-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!open) return;
@@ -75,9 +96,45 @@ function Navbar() {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const onPointerDown = (event) => {
+      if (!mobileMenuRef.current?.contains(event.target)) setMobileOpen(false);
+    };
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
+
   const isActive = (href) =>
     !href.includes("#") &&
     (href === "/" ? pathname === "/" : pathname.startsWith(href));
+
+  const handleHashLinkClick = (event, href) => {
+    if (!href.startsWith("/#")) return;
+
+    if (pathname !== "/") {
+      return;
+    }
+
+    event.preventDefault();
+    document.getElementById("HowBookingWorks")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    setMobileOpen(false);
+    setOpen(false);
+    window.history.pushState(null, "", href);
+  };
 
   async function handleLogout() {
     setOpen(false);
@@ -87,10 +144,25 @@ function Navbar() {
     router.refresh();
   }
 
+  const toggleTheme = () => setTheme((current) => (current === "dark" ? "light" : "dark"));
+
   return (
-    <header className="relative z-30 w-full border-b border-white/10 bg-[#020d17]/80 backdrop-blur-sm">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full overflow-visible border-b backdrop-blur-sm transition-colors duration-200",
+        theme === "dark"
+          ? "border-white/10 bg-[#020d17]/80"
+          : "border-slate-200 bg-white/90 shadow-[0_1px_0_rgba(15,23,42,0.06)]",
+      )}
+    >
       <div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-4 lg:px-8">
-        <Link href="/" className="flex items-center gap-3 text-white">
+        <Link
+          href="/"
+          className={cn(
+            "flex items-center gap-3 transition-colors",
+            theme === "dark" ? "text-white" : "text-slate-900",
+          )}
+        >
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7b21a] text-[#0b1220] shadow-[0_0_25px_rgba(247,178,26,0.5)]">
             <IconCamera size={18} stroke={2.5} />
           </div>
@@ -99,7 +171,12 @@ function Navbar() {
           </span>
         </Link>
 
-        <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-sm font-medium text-slate-300 md:flex">
+        <nav
+          className={cn(
+            "absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 text-sm font-medium md:flex",
+            theme === "dark" ? "text-slate-300" : "text-slate-600",
+          )}
+        >
           {NAV_LINKS.map((item) => {
             const active = isActive(item.href);
 
@@ -107,9 +184,16 @@ function Navbar() {
               <Link
                 key={item.label}
                 href={item.href}
+                onClick={(event) => handleHashLinkClick(event, item.href)}
                 className={cn(
-                  "relative py-1 transition-colors duration-200 hover:text-white",
-                  active && "text-white"
+                  "relative py-1 transition-colors duration-200",
+                  active
+                    ? theme === "dark"
+                      ? "text-white"
+                      : "text-slate-900"
+                    : theme === "dark"
+                      ? "hover:text-white"
+                      : "hover:text-slate-900",
                 )}
               >
                 {item.label}
@@ -122,6 +206,20 @@ function Navbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            onClick={toggleTheme}
+            className={cn(
+              "inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors",
+              theme === "dark"
+                ? "border-white/10 bg-white/5 text-amber-300 hover:border-white/20 hover:bg-white/10"
+                : "border-slate-200 bg-slate-100 text-slate-700 hover:border-slate-300 hover:bg-slate-200",
+            )}
+          >
+            {theme === "dark" ? <IconSun size={18} stroke={2} /> : <IconMoon size={18} stroke={2} />}
+          </button>
+
           {isPending ? (
             <span className="h-10 w-10 animate-pulse rounded-full bg-white/5" />
           ) : user ? (
@@ -149,25 +247,39 @@ function Navbar() {
               {open && (
                 <div
                   role="menu"
-                  className="absolute right-0 top-[calc(100%+10px)] z-50 w-full max-w-[300px] overflow-hidden rounded-lg border border-white/10 bg-[#0d1014] text-left shadow-[0_24px_70px_rgba(0,0,0,0.6)]"
+                  className={cn(
+                    "absolute right-0 top-[calc(100%+10px)] z-[60] w-[min(88vw,300px)] overflow-hidden rounded-lg border text-left shadow-[0_24px_70px_rgba(0,0,0,0.6)]",
+                    theme === "dark"
+                      ? "border-white/10 bg-[#0d1014]"
+                      : "border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]",
+                  )}
                 >
                   <div className="px-4 pb-3.5 pt-4">
-                    <p className="truncate text-[15px] font-semibold text-white">
+                    <p
+                      className={cn(
+                        "truncate text-[15px] font-semibold",
+                        theme === "dark" ? "text-white" : "text-slate-900",
+                      )}
+                    >
                       {user.name}
                     </p>
-                    <p className="mt-0.5 truncate text-[12px] text-slate-400">
-                      {user.email}
-                    </p>
+                    <p className={cn("mt-0.5 truncate text-[12px]", theme === "dark" ? "text-slate-400" : "text-slate-500")}>{user.email}</p>
                   </div>
 
-                  <div className="border-t border-white/[0.07] py-1.5">
+                  <div className={cn("border-t py-1.5", theme === "dark" ? "border-white/[0.07]" : "border-slate-200")}
+>
                     {ACCOUNT_LINKS.map((item) => (
                       <Link
                         key={item.label}
                         href={item.href}
                         role="menuitem"
                         onClick={() => setOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-[14px] font-medium text-slate-200 transition hover:bg-white/[0.05] hover:text-white"
+                        className={cn(
+                          "flex items-center gap-3 px-4 py-2.5 text-[14px] font-medium transition",
+                          theme === "dark"
+                            ? "text-slate-200 hover:bg-white/[0.05] hover:text-white"
+                            : "text-slate-700 hover:bg-slate-100 hover:text-slate-900",
+                        )}
                       >
                         <item.icon size={18} stroke={1.7} />
                         {item.label}
@@ -175,7 +287,7 @@ function Navbar() {
                     ))}
                   </div>
 
-                  <div className="border-t border-white/[0.07]">
+                  <div className={cn("border-t", theme === "dark" ? "border-white/[0.07]" : "border-slate-200")}>
                     <button
                       type="button"
                       role="menuitem"
@@ -193,14 +305,19 @@ function Navbar() {
             <>
               <Link
                 href="/login"
-                className="hidden rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-sm transition hover:border-white/20 hover:bg-white/10 sm:inline-flex"
+                className={cn(
+                  "hidden rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-sm transition sm:inline-flex",
+                  theme === "dark"
+                    ? "border-white/10 bg-white/5 text-white/90 hover:border-white/20 hover:bg-white/10"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-100",
+                )}
               >
                 Login
               </Link>
               <Link
                 href="/sign-up"
                 className={cn(
-                  "inline-flex items-center justify-center rounded-full border border-[#f7b21a] bg-[#f7b21a] px-5 py-2.5 text-sm font-semibold text-[#121b2b] shadow-[0_0_25px_rgba(247,178,26,0.3)] transition hover:bg-[#ffbf38]"
+                  "inline-flex items-center justify-center rounded-full border border-[#f7b21a] bg-[#f7b21a] px-5 py-2.5 text-sm font-semibold text-[#121b2b] shadow-[0_0_25px_rgba(247,178,26,0.3)] transition hover:bg-[#ffbf38]",
                 )}
               >
                 Register
@@ -213,7 +330,12 @@ function Navbar() {
             onClick={() => setMobileOpen((current) => !current)}
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white md:hidden"
+            className={cn(
+              "inline-flex h-10 w-10 items-center justify-center rounded-full border md:hidden",
+              theme === "dark"
+                ? "border-white/10 bg-white/5 text-white"
+                : "border-slate-200 bg-slate-100 text-slate-700",
+            )}
           >
             <IconMenu2 size={18} />
           </button>
@@ -221,16 +343,35 @@ function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-white/10 bg-[#020d17]/95 px-5 py-4 md:hidden">
-          <nav className="flex flex-col gap-1 text-sm font-medium text-slate-300">
+        <div
+          ref={mobileMenuRef}
+          className={cn(
+            "absolute right-4 top-[calc(100%+8px)] z-[60] w-[220px] rounded-2xl border p-2 shadow-[0_24px_70px_rgba(0,0,0,0.6)] md:hidden",
+            theme === "dark"
+              ? "border-white/10 bg-[#0d141a]/95"
+              : "border-slate-200 bg-white/95",
+          )}
+        >
+          <nav
+            className={cn(
+              "flex flex-col gap-1 text-sm font-medium",
+              theme === "dark" ? "text-slate-300" : "text-slate-600",
+            )}
+          >
             {NAV_LINKS.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
+                onClick={(event) => {
+                  handleHashLinkClick(event, item.href);
+                  setMobileOpen(false);
+                }}
                 className={cn(
-                  "rounded-md px-2 py-2 transition hover:bg-white/5 hover:text-white",
-                  isActive(item.href) && "text-white"
+                  "rounded-xl px-3 py-2.5 text-left transition",
+                  theme === "dark"
+                    ? "hover:bg-white/5 hover:text-white"
+                    : "hover:bg-slate-100 hover:text-slate-900",
+                  isActive(item.href) && (theme === "dark" ? "bg-white/5 text-white" : "bg-slate-100 text-slate-900"),
                 )}
               >
                 {item.label}
@@ -239,16 +380,21 @@ function Navbar() {
           </nav>
 
           {!user && (
-            <div className="mt-3 flex items-center gap-3 border-t border-white/10 pt-4">
+            <div className={cn("mt-2 grid grid-cols-2 gap-2 border-t pt-2", theme === "dark" ? "border-white/10" : "border-slate-200")}>
               <Link
                 href="/login"
-                className="flex-1 rounded-full border border-white/15 bg-white/5 py-2 text-center text-sm font-medium text-white"
+                className={cn(
+                  "rounded-full border py-2 text-center text-sm font-medium",
+                  theme === "dark"
+                    ? "border-white/15 bg-white/5 text-white"
+                    : "border-slate-200 bg-white text-slate-700",
+                )}
               >
                 Login
               </Link>
               <Link
                 href="/sign-up"
-                className="flex-1 rounded-full bg-[#f7b21a] py-2 text-center text-sm font-semibold text-[#121b2b]"
+                className="rounded-full bg-[#f7b21a] py-2 text-center text-sm font-semibold text-[#121b2b]"
               >
                 Register
               </Link>

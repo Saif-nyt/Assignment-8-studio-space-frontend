@@ -17,7 +17,7 @@ export default function FeaturedStudios() {
 
     const fetchFeaturedStudios = async () => {
       try {
-        const response = await fetch("http://localhost:5001/studios/featured", {
+        const response = await fetch(`${process.env.BACKEND_URL || "http://localhost:5001"}/studios/featured`, {
           signal: controller.signal,
         });
 
@@ -52,17 +52,15 @@ export default function FeaturedStudios() {
 
   if (loading) {
     return (
-      <section className="bg-[#090b10] px-6 py-16 text-white md:px-10 max-w-2xl mx-auto">
+      <section className="bg-slate-50 px-4 py-14 text-slate-900 sm:px-6 md:px-10 dark:bg-slate-950 dark:text-slate-50">
         <div className="mx-auto max-w-[1600px]">
-          <p className="mb-8 text-sm text-slate-400">
-            Loading featured studios...
-          </p>
+          <p className="mb-8 text-sm text-slate-500 dark:text-slate-400">Loading featured studios...</p>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
               <div
                 key={item}
-                className="h-[450px] animate-pulse rounded-2xl bg-[#111820]"
+                className="h-[420px] animate-pulse rounded-2xl bg-slate-200 dark:bg-slate-800 sm:h-[440px]"
               />
             ))}
           </div>
@@ -73,19 +71,18 @@ export default function FeaturedStudios() {
 
   if (error) {
     return (
-      <section className="bg-[#090b10] px-6 py-16 text-center text-white max-w-2xl mx-auto">
-        <p className="text-slate-400">{error}</p>
+      <section className="bg-slate-50 px-4 py-14 text-center text-slate-900 sm:px-6 md:px-10 dark:bg-slate-950 dark:text-slate-50">
+        <p className="text-slate-500 dark:text-slate-400">{error}</p>
       </section>
     );
   }
 
   return (
-    <section className="bg-[#090b10] px-6 py-16 text-white md:px-10 max-w-3xl mx-auto">
+    <section className="featured-section bg-slate-50 px-4 py-14 text-slate-900 sm:px-6 md:px-10 dark:bg-slate-950 dark:text-slate-50">
       <div className="mx-auto max-w-[1600px]">
-        {/* Section Header */}
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
+        <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-cyan-600">
               Featured
             </p>
 
@@ -96,31 +93,28 @@ export default function FeaturedStudios() {
 
           <button
             onClick={() => router.push("/studios")}
-            className="flex items-center gap-3 rounded-xl border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:border-amber-500 hover:text-amber-400"
+            className="inline-flex items-center justify-center gap-3 self-start rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-amber-500 hover:text-amber-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-amber-400 dark:hover:text-amber-400 sm:self-auto"
           >
             View all
             <span className="text-lg">→</span>
           </button>
         </div>
 
-        {/* Empty State */}
         {studios.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#111820] py-20 text-center">
-            <h3 className="text-lg font-semibold">No featured studios yet</h3>
-            <p className="mt-2 text-sm text-slate-400">
+          <div className="rounded-2xl border border-slate-200 bg-white py-20 text-center dark:border-slate-700 dark:bg-slate-900">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-50">No featured studios yet</h3>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Check back soon for featured creative spaces.
             </p>
           </div>
         ) : (
-          /* Studio Grid */
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
             {studios.map((studio) => (
               <article
                 key={studio._id}
-                className="group overflow-hidden rounded-[22px] border border-white/10 bg-[#111820] transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-2xl hover:shadow-black/30"
+                className="group overflow-hidden rounded-[22px] border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-amber-300 hover:shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-slate-700 dark:bg-slate-900 dark:hover:border-amber-500/60 dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
               >
-                {/* Image */}
-                <div className="relative h-[260px] overflow-hidden sm:h-[300px]">
+                <div className="relative h-[240px] overflow-hidden sm:h-[260px]">
                   <Image
                     width={100}
                     height={100}
@@ -129,25 +123,23 @@ export default function FeaturedStudios() {
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-slate-900/10" />
 
-                  {/* Category */}
-                  <span className="absolute left-4 top-4 rounded-full bg-black/65 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+                  <span className="absolute left-4 top-4 rounded-full bg-white/80 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-slate-800 backdrop-blur-md shadow-sm dark:bg-slate-800/80 dark:text-slate-100">
                     {studio.category}
                   </span>
 
-                  {/* Favorite */}
                   <button
                     type="button"
                     onClick={() => toggleFavorite(studio._id)}
                     aria-label="Toggle favorite"
-                    className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-xl text-white backdrop-blur-md transition hover:bg-black/80"
+                    className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-xl text-slate-800 backdrop-blur-md shadow-sm transition hover:bg-white dark:bg-slate-800/80 dark:text-slate-100 dark:hover:bg-slate-700"
                   >
                     <span
                       className={
                         favorites.includes(studio._id)
                           ? "text-red-500"
-                          : "text-white"
+                          : "text-slate-800"
                       }
                     >
                       {favorites.includes(studio._id) ? "♥" : "♡"}
@@ -155,21 +147,18 @@ export default function FeaturedStudios() {
                   </button>
                 </div>
 
-                {/* Details */}
                 <div className="p-5">
-                  {/* Title and Rating */}
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="min-w-0 truncate text-lg font-bold tracking-tight text-white">
+                    <h3 className="min-w-0 truncate text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
                       {studio.title}
                     </h3>
 
-                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-semibold text-amber-400">
+                    <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-600 dark:bg-amber-500/10 dark:text-amber-300">
                       ★ {Number(studio.rating || 0).toFixed(1)}
                     </span>
                   </div>
 
-                  {/* Location */}
-                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-400">
+                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <svg
                       className="h-4 w-4 shrink-0"
                       fill="none"
@@ -188,13 +177,12 @@ export default function FeaturedStudios() {
                     <span className="truncate">{studio.location}</span>
                   </div>
 
-                  {/* Price and Button */}
                   <div className="mt-6 flex items-center justify-between gap-3">
                     <div>
-                      <span className="text-2xl font-bold text-white">
+                      <span className="text-2xl font-bold text-slate-900 dark:text-slate-50">
                         ${studio.hourlyRate}
                       </span>
-                      <span className="text-sm text-slate-400">/hr</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">/hr</span>
                     </div>
 
                     <button

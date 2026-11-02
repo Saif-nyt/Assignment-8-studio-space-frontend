@@ -51,9 +51,12 @@ function ExploreStudiosPageContent() {
 
     async function fetchStudios() {
       try {
-        const res = await fetch("http://localhost:5001/studios", {
-          signal: controller.signal,
-        });
+        const res = await fetch(
+          process.env.BACKEND_URL/studios || "http://localhost:5001/studios",
+          {
+            signal: controller.signal,
+          },
+        );
 
         if (!res.ok) {
           throw new Error("Unable to load studios.");

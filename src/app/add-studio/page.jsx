@@ -32,7 +32,7 @@ export default function AddStudioPage() {
   if (!user) return null;
 
   async function handleCreate(payload) {
-    const res = await fetch("http://localhost:5001/add-studio", {
+    const res = await fetch(process.env.BACKEND_URL/add-studio || "http://localhost:5001/add-studio", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -123,9 +123,106 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   html {
     @apply font-sans;
     font-size: 17px;
+    background-color: var(--background);
+    color: var(--foreground);
   }
+}
+
+html.light {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.light body {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+html.light body,
+html.light body * {
+  box-shadow: none !important;
+}
+
+html.light .bg-\[\#020b14\],
+html.light .bg-\[\#020d17\],
+html.light .bg-\[\#020d17\]\/80,
+html.light .bg-\[\#020d17\]\/85,
+html.light .bg-\[\#020d17\]\/90,
+html.light .bg-\[\#050b12\],
+html.light .bg-\[\#080b10\],
+html.light .bg-\[\#090b10\],
+html.light .bg-\[\#090d14\],
+html.light .bg-\[\#090e18\],
+html.light .bg-\[\#0b0b0c\],
+html.light .bg-\[\#0b0f16\],
+html.light .bg-\[\#0b1118\],
+html.light .bg-\[\#0d1014\],
+html.light .bg-\[\#0d141a\],
+html.light .bg-\[\#0d141d\],
+html.light .bg-\[\#10151e\],
+html.light .bg-\[\#111722\],
+html.light .bg-\[\#111827\],
+html.light .bg-\[\#111a22\],
+html.light .bg-\[\#121619\],
+html.light .bg-\[\#171d26\],
+html.light .bg-slate-900,
+html.light .bg-slate-950,
+html.light .bg-zinc-950,
+html.light .bg-neutral-950,
+html.light .bg-black,
+html.light .bg-black\/25,
+html.light .bg-black\/45 {
+  background-color: #f8fafc !important;
+}
+
+html.light .text-white,
+html.light .text-slate-200,
+html.light .text-slate-300,
+html.light .text-slate-400,
+html.light .text-slate-500,
+html.light .text-slate-600,
+html.light .text-white\/90,
+html.light .text-slate-100 {
+  color: #0f172a !important;
+}
+
+html.light .border-white\/10,
+html.light .border-white\/15,
+html.light .border-white\/20,
+html.light .border-white\/25,
+html.light .border-white\/30,
+html.light .border-white\/50,
+html.light .border-white\/80,
+html.light .border-white\/90,
+html.light .border-white\/\[0\.07\],
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.09\] {
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html.light .bg-white\/5,
+html.light .bg-white\/10,
+html.light .bg-white\/20,
+html.light .bg-white\/30,
+html.light .bg-white\/40,
+html.light .bg-white\/50,
+html.light .bg-white\/60,
+html.light .bg-white\/70,
+html.light .bg-white\/80,
+html.light .bg-white\/90 {
+  background-color: rgba(148, 163, 184, 0.08) !important;
+}
+
+html.light .text-slate-700,
+html.light .text-slate-800,
+html.light .text-slate-900,
+html.light .text-slate-950 {
+  color: #0f172a !important;
 }

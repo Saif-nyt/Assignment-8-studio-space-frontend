@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-const API_URL = "http://localhost:5001";
+const API_URL = `${process.env.BACKEND_URL || "http://localhost:5001"}`;
 
 const CATEGORIES = [
   "Photo Studio",
@@ -376,7 +376,11 @@ export default function StudioForm({
                   value={form.category}
                   onChange={update}
                   required
-                  className={cn(inputClass, "appearance-none pr-12")}
+                  style={{ WebkitAppearance: "none", MozAppearance: "none" }}
+                  className={cn(
+                    inputClass,
+                    "cursor-pointer appearance-none pr-12 text-sm sm:text-base",
+                  )}
                 >
                   <option value="" disabled>
                     Choose a category
@@ -745,13 +749,13 @@ export default function StudioForm({
 /* STYLES */
 
 const inputClass =
-  "w-full min-h-[54px] rounded-xl border border-white/[0.09] bg-[#0b0f16] px-5 py-3.5 text-base text-white outline-none transition placeholder:text-slate-600 hover:border-white/15 focus:border-amber-500/70 focus:ring-4 focus:ring-amber-500/[0.07]";
+  "w-full min-h-[54px] rounded-xl border border-white/[0.09] bg-[#0b0f16] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 hover:border-white/15 focus:border-amber-500/70 focus:ring-4 focus:ring-amber-500/[0.07] sm:px-5 sm:py-3.5 sm:text-base";
 
 const readOnlyInputClass =
-  "w-full min-h-[54px] cursor-not-allowed rounded-xl border border-white/[0.06] bg-[#0b0f16] px-5 py-3.5 text-base text-slate-500 outline-none";
+  "w-full min-h-[54px] cursor-not-allowed rounded-xl border border-white/[0.06] bg-[#0b0f16] px-4 py-3 text-sm text-slate-500 outline-none sm:px-5 sm:py-3.5 sm:text-base";
 
 const secondaryButtonClass =
-  "inline-flex min-h-[46px] items-center justify-center gap-2.5 rounded-xl border border-white/[0.1] bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:border-amber-500/40 hover:bg-amber-500/[0.06]";
+  "inline-flex min-h-[46px] items-center justify-center gap-2.5 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition hover:border-amber-500/40 hover:bg-amber-500/[0.06] sm:px-5";
 
 /* REUSABLE COMPONENTS */
 

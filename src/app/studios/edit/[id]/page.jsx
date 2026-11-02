@@ -22,9 +22,13 @@ export default async function EditStudioPage({ params }) {
   let studio;
 
   try {
-    const res = await fetch(`http://localhost:5001/studios/${id}`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `process.env.BACKEND_URL/studios/${id}` ||
+        `http://localhost:5001/studios/${id}`,
+      {
+        cache: "no-store",
+      },
+    );
 
     if (res.status === 404) {
       notFound();

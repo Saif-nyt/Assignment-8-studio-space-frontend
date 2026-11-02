@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   reactCompiler: true,
   images: {
     remotePatterns: [

@@ -31,11 +31,11 @@ Hourly studio-booking frontend: Next.js 16 App Router, React 19, Tailwind v4, sh
 - `@/*` maps to `src/*`. App code imports `cn` from `@/lib/utils` (a re-export of the `cn` package).
 - The root layout adds `Navbar` and `Footer` to every route; do not add them per page.
 - `src/components/ui/*` is shadcn output configured as `base-lyra`, JSX-only, Tabler icons, Base UI primitives. Add components with `npx shadcn add <name>`; don't hand-edit them or rewrite their imports (`@base-ui/react/*`, `cn` from `"cn"`).
-- The bookable URL surface is still partial: footer/auth links point at `/about`, `/add-studio`, `/my-bookings`, `/privacy`, and `/terms`, but those routes do not exist yet.
+- The bookable URL surface is still partial: footer/auth links point at `/about`, `/my-bookings`, `/privacy`, and `/terms`, but those routes do not exist yet.
 - `BookWorkshopNowButton` ignores its `studio` prop and hardcodes the title, rate, deposit, and date — don't treat it as the source of truth for studio data.
 
 ## API contract used by the app
 
 - `GET /studios` returns an array; `GET /studios/:id` returns `_id, title, category, location, overview, hourlyRate, securityDeposit, maxCapacity, amenities[], rating, image, ownerName, ownerImage, ownerEmail`.
-- `POST /bookings` takes `{ studioId, studioTitle, bookingDate, startTime, durationHours, noteToHost, totalAmount }` with `credentials: "include"`; `409` means the slot is already reserved.
+- `POST /add-studio` inserts a studio with that same shape, and `POST /bookings` takes `{ studioId, studioTitle, bookingDate, startTime, durationHours, noteToHost, totalAmount }` with `credentials: "include"`; `409` means the slot is already reserved.
 - `/studios` fetches in a client component, while `/studios/[id]` fetches in an async server component. The backend must be running for either page to show data.

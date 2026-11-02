@@ -1,153 +1,83 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect, notFound } from "next/navigation";
 import StudioForm from "@/components/studio-form";
-import { toast } from "@/components/ui/toast";
 
-const API_URL = "http://localhost:5001";
+export default async function EditStudioPage({ params }) {
+  
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-export default function EditStudioPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const user = session?.user;
 
-  const [studio, setStudio] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  if (!user?.email) {
+    redirect("/login");
+  }
 
-  useEffect(() => {
-    if (!id) return;
+  
+  const { id } = await params;
 
-    const controller = new AbortController();
+ 
+  let studio;
 
-    async function loadStudio() {
-      try {
-        const res = await fetch(`${API_URL}/studios/${id}`, {
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-          signal: controller.signal,
-        });
-
-        if (res.status === 404) {
-          setError("This listing could not be found.");
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch studio");
-        }
-
-        const data = await res.json();
-
-        if (!data || !data._id) {
-          setError("This listing could not be found.");
-          return;
-        }
-
-        setStudio(data);
-      } catch (err) {
-        if (err?.name === "AbortError") return;
-        setError(
-          "Could not load this listing. Make sure the backend is running and try again."
-        );
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadStudio();
-
-    return () => controller.abort();
-  }, [id]);
-
-  async function handleUpdate(payload) {
-    const res = await fetch(`${API_URL}/studios/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      credentials: "include",
+  try {
+    const res = await fetch(`http://localhost:5001/studios/${id}`, {
+      cache: "no-store",
     });
 
-    if (res.status === 413) {
-      throw new Error(
-        "The photos are too large to upload. Try a smaller image or paste an image URL instead."
-      );
-    }
-
     if (res.status === 404) {
-      throw new Error("This listing no longer exists.");
-    }
-
-    if (res.status === 403) {
-      throw new Error("You can only edit listings that you own.");
+      notFound();
     }
 
     if (!res.ok) {
-      throw new Error("Could not save your changes. Please try again.");
+      throw new Error("Failed to fetch studio");
     }
 
-    toast.add({
-      title: "Listing updated",
-      description: "Your changes are live. Taking you to your listings…",
-      type: "success",
-    });
-
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    router.push("/my-listings");
-    router.refresh();
+    studio = await res.json();
+  } catch (error) {
+    console.error("Error fetching studio:", error);
+    throw error;
   }
 
-  if (loading) {
-    return (
-      <StatusScreen
-        title="Loading your listing"
-        description="Fetching the details you saved earlier."
-      />
-    );
+  if (!studio) {
+    notFound();
   }
 
-  if (error) {
-    return (
-      <StatusScreen
-        title="Listing unavailable"
-        description={error}
-        action={
-          <Link
-            href="/studios"
-            className="rounded-full bg-amber-500 px-6 py-3 text-base font-bold text-black transition hover:bg-amber-400"
-          >
-            Back to studios
-          </Link>
-        }
-      />
-    );
+ 
+  if (
+    (studio.ownerEmail || "").trim().toLowerCase() !==
+    user.email.trim().toLowerCase()
+  ) {
+    redirect("/my-studios");
   }
 
   return (
-    <StudioForm
-      mode="edit"
-      studio={studio}
-      host={{ name: studio?.ownerName, email: studio?.ownerEmail }}
-      onSubmit={handleUpdate}
-    />
-  );
-}
+    <main className="min-h-screen bg-[#020b14] px-5 py-10 text-white md:px-8">
+      <div className="mx-auto max-w-[1100px] pt-4 lg:pt-8">
+        <div className="mb-9">
+          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-[#f4b63a]">
+            Hosting
+          </p>
 
-function StatusScreen({ title, description, action }) {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-[#08090b] px-5 py-16 text-white">
-      <div className="w-full max-w-md rounded-2xl border border-white/[0.08] bg-[#111214] p-8 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-500">
-          Private listing
-        </p>
-        <h1 className="mt-3 text-2xl font-semibold tracking-tight">{title}</h1>
-        <p className="mt-3 text-base leading-7 text-slate-400">{description}</p>
-        {action && <div className="mt-6 flex justify-center">{action}</div>}
+          <h1 className="mt-4 text-4xl font-black tracking-tight md:text-5xl">
+            Edit your studio
+          </h1>
+
+          <p className="mt-3 text-base text-slate-400">
+            Update your studio details and save your changes.
+          </p>
+        </div>
+
+        <StudioForm
+          mode="edit"
+          studio={studio}
+          host={{
+            name: studio.ownerName,
+            email: studio.ownerEmail,
+            image: studio.ownerImage,
+          }}
+        />
       </div>
     </main>
   );

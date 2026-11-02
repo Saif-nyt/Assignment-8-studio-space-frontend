@@ -45,7 +45,7 @@ function ExploreStudiosPageContent() {
     }
   }, [searchParams]);
 
-  // Fetch studios
+ 
   useEffect(() => {
     const controller = new AbortController();
 
@@ -84,7 +84,7 @@ function ExploreStudiosPageContent() {
     return () => controller.abort();
   }, []);
 
-  // Filter studios
+
   const visibleStudios = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -111,7 +111,6 @@ function ExploreStudiosPageContent() {
     });
   }, [studios, searchQuery, category, maxRate]);
 
-  // Reset filters
   useEffect(() => {
     const nextParams = new URLSearchParams(searchParams.toString());
 
@@ -139,7 +138,7 @@ function ExploreStudiosPageContent() {
   return (
     <main className="min-h-screen bg-[#090b10] text-white">
       <div className="mx-auto max-w-[1600px] px-6 py-16 md:px-10">
-        {/* Page Header */}
+       
         <div className="mb-10">
           <div className="mb-4 flex items-center gap-3">
             <span className="h-px w-8 bg-amber-500" />
@@ -160,10 +159,10 @@ function ExploreStudiosPageContent() {
           </p>
         </div>
 
-        {/* Search & Filters */}
+     
         <div className="mb-8 rounded-2xl border border-white/[0.08] bg-[#111722] p-5 md:p-6">
           <div className="grid grid-cols-1 items-end gap-5 md:grid-cols-12">
-            {/* Search */}
+            
             <div className="md:col-span-5">
               <label className="mb-2 block text-xs font-semibold text-slate-400">
                 Search studios
@@ -191,7 +190,7 @@ function ExploreStudiosPageContent() {
               </div>
             </div>
 
-            {/* Category */}
+            
             <div className="md:col-span-4">
               <label className="mb-2 block text-xs font-semibold text-slate-400">
                 Studio category
@@ -210,7 +209,7 @@ function ExploreStudiosPageContent() {
               </select>
             </div>
 
-            {/* Maximum Rate */}
+          
             <div className="md:col-span-3">
               <div className="mb-3 flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-400">
@@ -240,7 +239,7 @@ function ExploreStudiosPageContent() {
             </div>
           </div>
 
-          {/* Reset Filters */}
+        
           <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
             <p className="text-xs text-slate-500">
               Refine your search to find the right creative space.
@@ -255,7 +254,7 @@ function ExploreStudiosPageContent() {
           </div>
         </div>
 
-        {/* Explore Studios Heading + Add Studio Button */}
+       
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-white">Explore spaces</h2>
@@ -279,7 +278,7 @@ function ExploreStudiosPageContent() {
           </button>
         </div>
 
-        {/* Loading Skeletons */}
+       
         {loading && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -288,7 +287,7 @@ function ExploreStudiosPageContent() {
           </div>
         )}
 
-        {/* Error */}
+        
         {!loading && error && (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.05] py-16 text-center">
             <p className="font-semibold text-white">Something went wrong</p>
@@ -304,7 +303,7 @@ function ExploreStudiosPageContent() {
           </div>
         )}
 
-        {/* No Studios Found */}
+       
         {!loading && !error && visibleStudios.length === 0 && (
           <div className="rounded-2xl border border-white/[0.08] bg-[#111722] px-6 py-20 text-center">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04] text-2xl">
@@ -326,7 +325,7 @@ function ExploreStudiosPageContent() {
           </div>
         )}
 
-        {/* Studio Cards */}
+       
         {!loading && !error && visibleStudios.length > 0 && (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {visibleStudios.map((studio) => (

@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+const API_URL = "http://localhost:5001";
 
 const CATEGORIES = [
   "Photo Studio",
@@ -121,6 +124,9 @@ export default function StudioForm({
   host = null,
   onSubmit,
 }) {
+  const router = useRouter();
+
+  const isEditing = mode === "edit";
   const copy = COPY[mode] ?? COPY.add;
 
   const [form, setForm] = useState(() => buildForm(studio));
@@ -249,12 +255,24 @@ export default function StudioForm({
     }
 
     if (!photos.length) {
-      setError("Add at least one photo before publishing your listing.");
+      setError("Add at least one photo before saving.");
       return;
     }
 
-    if (!onSubmit) {
-      setError("Form submission is not configured.");
+    if (isEditing && !studio?._id) {
+      setError("Studio ID is missing. Please refresh the page.");
+      return;
+    }
+
+    if (
+      !form.title.trim() ||
+      !form.location.trim() ||
+      !form.overview.trim() ||
+      !form.hourlyRate ||
+      !form.securityDeposit ||
+      !form.maxCapacity
+    ) {
+      setError("Please complete all required fields.");
       return;
     }
 
@@ -272,11 +290,41 @@ export default function StudioForm({
       amenities,
       overview: form.overview.trim(),
       rating: Number(form.rating ?? 5),
+
+      // Keep the existing owner's information when editing.
+      ownerName: host?.name ?? studio?.ownerName ?? "",
+      ownerEmail: host?.email ?? studio?.ownerEmail ?? "",
+      ownerImage: host?.image ?? studio?.ownerImage ?? "",
     };
 
     try {
-      await onSubmit(payload);
+      if (onSubmit) {
+        await onSubmit(payload);
+        return;
+      }
+
+      const url = isEditing
+        ? `${API_URL}/studios/${studio._id}`
+        : `${API_URL}/add-studio`;
+
+      const response = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Could not save your studio.");
+      }
+
+      router.push("/my-studios");
+      router.refresh();
     } catch (err) {
+      console.error("Studio submission error:", err);
       setError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
@@ -285,7 +333,7 @@ export default function StudioForm({
 
   return (
     <div className="w-full">
-      {/* Form Header */}
+      {/* FORM HEADER */}
       <div className="mb-9 border-b border-white/[0.07] pb-7">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-500">
           {copy.eyebrow}
@@ -456,7 +504,7 @@ export default function StudioForm({
             </label>
           </div>
 
-          {/* Photo Preview */}
+          {/* PHOTO PREVIEW */}
           {photos.length > 0 ? (
             <div className="mt-6">
               <div className="mb-3 flex items-center justify-between">
@@ -602,7 +650,7 @@ export default function StudioForm({
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             <Field label="Owner name">
               <input
-                value={host?.name ?? "—"}
+                value={host?.name ?? studio?.ownerName ?? "—"}
                 readOnly
                 className={readOnlyInputClass}
               />
@@ -610,7 +658,7 @@ export default function StudioForm({
 
             <Field label="Owner email">
               <input
-                value={host?.email ?? "—"}
+                value={host?.email ?? studio?.ownerEmail ?? "—"}
                 readOnly
                 className={readOnlyInputClass}
               />
@@ -618,7 +666,7 @@ export default function StudioForm({
 
             <Field label="Owner image URL">
               <input
-                value={host?.image ?? ""}
+                value={host?.image ?? studio?.ownerImage ?? ""}
                 readOnly
                 className={readOnlyInputClass}
               />
@@ -630,7 +678,7 @@ export default function StudioForm({
                 min="0"
                 max="5"
                 step="0.1"
-                value={form.rating ?? 5}
+                value={form.rating}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
@@ -663,7 +711,7 @@ export default function StudioForm({
         <div className="flex flex-col gap-5 border-t border-white/[0.08] pt-7 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-white">
-              Ready to publish?
+              {isEditing ? "Ready to save your changes?" : "Ready to publish?"}
             </p>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">

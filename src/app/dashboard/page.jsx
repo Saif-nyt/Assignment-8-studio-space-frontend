@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   IconArrowUpRight,
@@ -11,30 +12,102 @@ import {
 } from "@tabler/icons-react";
 import { authClient } from "@/lib/auth-client";
 
-const summaryCards = [
-  {
-    icon: IconInbox,
-    value: 0,
-    label: "Studio listings",
-    caption: "Spaces you host",
-  },
-  {
-    icon: IconCalendar,
-    value: 0,
-    label: "Bookings made",
-    caption: "Sessions you requested",
-  },
-  {
-    icon: IconClockHour4,
-    value: 0,
-    label: "Pending requests",
-    caption: "Awaiting host approval",
-  },
-];
+const API_BASE_URL = "http://localhost:5001";
+
+const emptyStats = {
+  studios: 0,
+  bookings: 0,
+  pending: 0,
+};
 
 export default function DashboardPage() {
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending: sessionLoading } = authClient.useSession();
   const userName = session?.user?.name || "Anonymous";
+  const userEmail = session?.user?.email;
+
+  const [stats, setStats] = useState(emptyStats);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userEmail) return;
+
+    let cancelled = false;
+    const normalizedEmail = userEmail.trim().toLowerCase();
+
+    async function loadStats() {
+      try {
+        const [studiosRes, bookingsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/studios`, { credentials: "include" }),
+          fetch(
+            `${API_BASE_URL}/my-bookings/${encodeURIComponent(normalizedEmail)}`,
+            { credentials: "include" }
+          ),
+        ]);
+
+        const studios = studiosRes.ok ? await studiosRes.json() : [];
+        const bookings = bookingsRes.ok ? await bookingsRes.json() : [];
+
+        if (cancelled) return;
+
+        const ownedStudios = Array.isArray(studios)
+          ? studios.filter(
+              (studio) =>
+                (studio.ownerEmail || "").trim().toLowerCase() ===
+                normalizedEmail
+            )
+          : [];
+
+        const bookingList = Array.isArray(bookings) ? bookings : [];
+        const pendingRequests = bookingList.filter(
+          (booking) =>
+            String(booking.status || "PENDING").toUpperCase() === "PENDING"
+        ).length;
+
+        setStats({
+          studios: ownedStudios.length,
+          bookings: bookingList.length,
+          pending: pendingRequests,
+        });
+      } catch (error) {
+        console.error("Failed to load dashboard stats", error);
+      } finally {
+        if (!cancelled) {
+          setStatsLoading(false);
+        }
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userEmail]);
+
+  const isStatsLoading =
+    sessionLoading || (statsLoading && Boolean(userEmail));
+  const displayedStats = userEmail ? stats : emptyStats;
+
+  const summaryCards = [
+    {
+      icon: IconInbox,
+      value: displayedStats.studios,
+      label: "Studio listings",
+      caption: "Spaces you host",
+    },
+    {
+      icon: IconCalendar,
+      value: displayedStats.bookings,
+      label: "Bookings made",
+      caption: "Sessions you requested",
+    },
+    {
+      icon: IconClockHour4,
+      value: displayedStats.pending,
+      label: "Pending requests",
+      caption: "Awaiting host approval",
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[#020b14] px-5 py-10 text-white md:px-8 lg:px-10">
@@ -70,7 +143,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="mt-8 text-[2.8rem] font-black leading-none tracking-[-0.06em] text-white">
-                {value}
+                {isStatsLoading ? "—" : value}
               </div>
 
               <div className="mt-3 text-[1.05rem] font-medium text-white/95">

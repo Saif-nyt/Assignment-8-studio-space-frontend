@@ -34,7 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-,     "src/app/studios/Add_page/page.jsx", "src/app/studios/page.jsx", "src/components/StudioCard.jsx"  ],
+,     "src/app/studios/Add_page/page.jsx", "src/app/studios/page.jsx", "src/components/StudioCard.jsx", "src/app/auth/[..all]/route.js"  ],
   "exclude": [
     "node_modules"
   ]

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +62,7 @@ const COPY = {
     eyebrow: "New listing",
     title: "Add a new studio",
     description:
-      "Describe the room honestly, price the hour fairly, and add the photos you'd want to see before booking someone else's space.",
+      "Describe your space, set your pricing, and showcase the details creators need to find their perfect studio.",
     submit: "Publish listing",
     submitting: "Publishing...",
   },
@@ -69,7 +70,7 @@ const COPY = {
     eyebrow: "Private listing",
     title: "Edit your studio",
     description:
-      "Keep the details creators see accurate. Changes go live as soon as you save them.",
+      "Keep your studio information accurate and up to date. Changes will be reflected in your listing.",
     submit: "Save changes",
     submitting: "Saving changes...",
   },
@@ -121,12 +122,15 @@ export default function StudioForm({
   onSubmit,
 }) {
   const copy = COPY[mode] ?? COPY.add;
+
   const [form, setForm] = useState(() => buildForm(studio));
+
   const [amenities, setAmenities] = useState(() =>
     Array.isArray(studio?.amenities)
       ? studio.amenities.filter((item) => typeof item === "string")
-      : []
+      : [],
   );
+
   const [photos, setPhotos] = useState(() => buildPhotos(studio));
   const [photoUrl, setPhotoUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -144,14 +148,18 @@ export default function StudioForm({
 
   const update = (event) => {
     const { name, value } = event.target;
-    setForm((current) => ({ ...current, [name]: value }));
+
+    setForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
   };
 
   const toggleAmenity = (amenity) => {
     setAmenities((current) =>
       current.includes(amenity)
         ? current.filter((item) => item !== amenity)
-        : [...current, amenity]
+        : [...current, amenity],
     );
   };
 
@@ -162,7 +170,10 @@ export default function StudioForm({
 
     try {
       const parsed = new URL(url);
-      if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        throw new Error();
+      }
     } catch {
       setError("Enter a valid image URL starting with http:// or https://.");
       return;
@@ -173,6 +184,11 @@ export default function StudioForm({
       return;
     }
 
+    if (photos.includes(url)) {
+      setError("This photo has already been added.");
+      return;
+    }
+
     setPhotos((current) => [...current, url]);
     setPhotoUrl("");
     setError("");
@@ -180,17 +196,25 @@ export default function StudioForm({
 
   const handleUpload = async (event) => {
     const files = Array.from(event.target.files ?? []);
+
     event.target.value = "";
 
     if (!files.length) return;
 
     const images = files.filter((file) => file.type.startsWith("image/"));
+
     if (!images.length) {
       setError("Choose an image file to upload.");
       return;
     }
 
+    if (photos.length + images.length > 12) {
+      setError("You can add up to 12 photos.");
+      return;
+    }
+
     const oversized = images.find((file) => file.size > 12 * 1024 * 1024);
+
     if (oversized) {
       setError("Each photo must be smaller than 12 MB.");
       return;
@@ -207,8 +231,9 @@ export default function StudioForm({
       }
 
       setPhotos((current) => [...current, ...urls].slice(0, 12));
-    } catch {
-      setError("Could not read that image. Please try another.");
+    } catch (err) {
+      console.error("Image processing error:", err);
+      setError("Could not process that image. Please try another.");
     } finally {
       setUploading(false);
     }
@@ -225,6 +250,11 @@ export default function StudioForm({
 
     if (!photos.length) {
       setError("Add at least one photo before publishing your listing.");
+      return;
+    }
+
+    if (!onSubmit) {
+      setError("Form submission is not configured.");
       return;
     }
 
@@ -247,412 +277,491 @@ export default function StudioForm({
     try {
       await onSubmit(payload);
     } catch (err) {
-      setError(
-        err?.message || "Something went wrong. Please try again."
-      );
+      setError(err?.message || "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-[#08090b] px-5 py-12 text-white sm:px-8 md:py-16">
-      <div className="mx-auto max-w-[780px]">
-        <div className="mb-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-500">
-            {copy.eyebrow}
-          </p>
-          <h1 className="mt-3 text-[2.5rem] font-semibold tracking-tight text-white sm:text-[3.25rem]">
-            {copy.title}
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
-            {copy.description}
-          </p>
-        </div>
+    <div className="w-full">
+      {/* Form Header */}
+      <div className="mb-9 border-b border-white/[0.07] pb-7">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-500">
+          {copy.eyebrow}
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <Section
-            title="The basics"
-            description="How your space appears in search and on its detail page."
-          >
-            <div className="space-y-5">
+        <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          {copy.title}
+        </h2>
+
+        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400 sm:text-base">
+          {copy.description}
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-7">
+        {/* BASIC INFORMATION */}
+        <Section
+          number="01"
+          title="The basics"
+          description="Tell creators what your space is and what makes it special."
+        >
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="lg:col-span-2">
               <Field label="Listing title">
                 <input
                   name="title"
                   value={form.title}
                   onChange={update}
                   required
-                  placeholder="Daylight loft with cyclorama wall"
+                  placeholder="e.g. Daylight loft with cyclorama wall"
                   className={inputClass}
                 />
               </Field>
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <Field label="Category">
-                  <div className="relative">
-                    <select
-                      name="category"
-                      value={form.category}
-                      onChange={update}
-                      required
-                      className={cn(inputClass, "appearance-none pr-9")}
-                    >
-                      <option value="" disabled>
-                        Choose a category
-                      </option>
-                      {categoryOptions.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown />
-                  </div>
-                </Field>
-
-                <Field label="Max capacity">
-                  <input
-                    name="maxCapacity"
-                    type="number"
-                    min="1"
-                    value={form.maxCapacity}
-                    onChange={update}
-                    required
-                    placeholder="8"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Hourly rate ($)">
-                  <input
-                    name="hourlyRate"
-                    type="number"
-                    min="1"
-                    value={form.hourlyRate}
-                    onChange={update}
-                    required
-                    placeholder="65"
-                    className={inputClass}
-                  />
-                </Field>
-
-                <Field label="Security deposit ($)">
-                  <input
-                    name="securityDeposit"
-                    type="number"
-                    min="0"
-                    value={form.securityDeposit}
-                    onChange={update}
-                    required
-                    placeholder="150"
-                    className={inputClass}
-                  />
-                </Field>
-              </div>
             </div>
-          </Section>
 
-          <Section title="Location / Address">
-            <Field label="Location">
+            <Field label="Category">
+              <div className="relative">
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={update}
+                  required
+                  className={cn(inputClass, "appearance-none pr-12")}
+                >
+                  <option value="" disabled>
+                    Choose a category
+                  </option>
+
+                  {categoryOptions.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown />
+              </div>
+            </Field>
+
+            <Field label="Maximum capacity">
               <input
-                name="location"
-                value={form.location}
+                name="maxCapacity"
+                type="number"
+                min="1"
+                value={form.maxCapacity}
                 onChange={update}
                 required
-                placeholder="Gulshan 2, Dhaka, Bangladesh"
+                placeholder="e.g. 8 people"
                 className={inputClass}
               />
             </Field>
-          </Section>
 
-          <Section
-            title="Photos"
-            description="Upload from your device or paste an image URL. The first photo becomes your cover."
-          >
-            <Field label="Image URL">
+            <Field label="Hourly rate ($)">
               <input
-                value={photoUrl}
-                onChange={(event) => setPhotoUrl(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addPhotoLink();
-                  }
-                }}
-                placeholder="https://images.unsplash.com/..."
-                className={cn(inputClass, "flex-1")}
+                name="hourlyRate"
+                type="number"
+                min="1"
+                value={form.hourlyRate}
+                onChange={update}
+                required
+                placeholder="e.g. 65"
+                className={inputClass}
               />
             </Field>
 
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <Field label="Security deposit ($)">
+              <input
+                name="securityDeposit"
+                type="number"
+                min="0"
+                value={form.securityDeposit}
+                onChange={update}
+                required
+                placeholder="e.g. 150"
+                className={inputClass}
+              />
+            </Field>
+          </div>
+        </Section>
 
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={addPhotoLink}
-                  className={secondaryButtonClass}
-                >
-                  <PlusIcon />
-                  Add link
-                </button>
+        {/* LOCATION */}
+        <Section
+          number="02"
+          title="Location"
+          description="Help creators understand where your studio is located."
+        >
+          <Field label="Full location / Address">
+            <input
+              name="location"
+              value={form.location}
+              onChange={update}
+              required
+              placeholder="e.g. Gulshan 2, Dhaka, Bangladesh"
+              className={inputClass}
+            />
+          </Field>
+        </Section>
 
-                <label
-                  className={cn(
-                    secondaryButtonClass,
-                    uploading ? "cursor-wait opacity-60" : "cursor-pointer"
-                  )}
-                  aria-disabled={uploading}
-                >
-                  <UploadIcon />
-                  {uploading ? "Preparing..." : "Upload"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    disabled={uploading}
-                    onChange={handleUpload}
-                    className="hidden"
-                  />
-                </label>
+        {/* PHOTOS */}
+        <Section
+          number="03"
+          title="Studio photos"
+          description="Show your space from its best angles. Your first photo will be the cover image."
+        >
+          <Field label="Paste an image URL">
+            <input
+              value={photoUrl}
+              onChange={(event) => setPhotoUrl(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addPhotoLink();
+                }
+              }}
+              placeholder="https://images.unsplash.com/..."
+              className={inputClass}
+            />
+          </Field>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={addPhotoLink}
+              className={secondaryButtonClass}
+            >
+              <PlusIcon />
+              Add image URL
+            </button>
+
+            <label
+              className={cn(
+                secondaryButtonClass,
+                uploading ? "cursor-wait opacity-60" : "cursor-pointer",
+              )}
+            >
+              <UploadIcon />
+
+              {uploading ? "Preparing photos..." : "Upload from device"}
+
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                disabled={uploading}
+                onChange={handleUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          {/* Photo Preview */}
+          {photos.length > 0 ? (
+            <div className="mt-6">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-semibold text-white">
+                  Uploaded photos
+                </p>
+
+                <span className="text-xs text-slate-500">
+                  {photos.length}/12 photos
+                </span>
               </div>
-            </div>
 
-            {photos.length > 0 ? (
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                 {photos.map((photo, index) => (
                   <div
                     key={`${photo.slice(0, 24)}-${index}`}
-                    className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-[#0b0c0e]"
+                    className="group relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-[#090e18]"
                   >
-                    <img
+                    <Image
                       src={photo}
                       alt={`Studio photo ${index + 1}`}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      unoptimized
+                      className="object-cover transition duration-500 group-hover:scale-105"
                     />
+
                     {index === 0 && (
-                      <span className="absolute left-2 top-2 rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-black">
+                      <span className="absolute left-3 top-3 rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
                         Cover
                       </span>
                     )}
+
                     <button
                       type="button"
                       onClick={() =>
                         setPhotos((current) =>
-                          current.filter((_, i) => i !== index)
+                          current.filter((_, i) => i !== index),
                         )
                       }
                       aria-label={`Remove photo ${index + 1}`}
-                      className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition hover:bg-black group-hover:opacity-100"
+                      className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/75 text-white opacity-100 transition hover:bg-red-500 sm:opacity-0 sm:group-hover:opacity-100"
                     >
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="h-3.5 w-3.5"
-                      >
-                        <path d="M18 6 6 18M6 6l12 12" />
-                      </svg>
+                      <CloseIcon />
                     </button>
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="mt-4 flex min-h-[155px] flex-col items-center justify-center rounded-xl border border-white/[0.06] bg-[#0b0c0e] px-6 py-9 text-center">
+            </div>
+          ) : (
+            <div className="mt-5 flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-[#0b0f16] px-6 py-10 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.04]">
                 <PhotoIcon />
-                <p className="mt-3 text-base font-semibold text-white">
-                  No photos yet
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Listings with four or more photos get booked twice as often.
-                </p>
               </div>
-            )}
-          </Section>
 
-          <Section
-            title="Amenities"
-            description="Select everything a creator can use during their session."
-          >
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {amenityOptions.map((amenity) => {
-                const selected = amenities.includes(amenity);
+              <p className="mt-4 text-base font-semibold text-white">
+                No photos added yet
+              </p>
 
-                return (
-                  <button
-                    key={amenity}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => toggleAmenity(amenity)}
+              <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+                Upload images or paste image URLs to showcase your studio.
+              </p>
+            </div>
+          )}
+        </Section>
+
+        {/* AMENITIES */}
+        <Section
+          number="04"
+          title="Amenities & facilities"
+          description="Select all the equipment, facilities and amenities available in your studio."
+        >
+          <div className="mb-5 flex items-center justify-between">
+            <p className="text-sm text-slate-400">
+              Choose as many as you need.
+            </p>
+
+            <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-400">
+              {amenities.length} selected
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            {amenityOptions.map((amenity) => {
+              const selected = amenities.includes(amenity);
+
+              return (
+                <button
+                  key={amenity}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => toggleAmenity(amenity)}
+                  className={cn(
+                    "flex min-h-[48px] items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition",
+                    selected
+                      ? "border-amber-500/50 bg-amber-500/[0.07] text-white"
+                      : "border-white/[0.08] bg-[#0b0f16] text-slate-400 hover:border-white/20 hover:text-white",
+                  )}
+                >
+                  <span
                     className={cn(
-                      "flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-left text-sm transition",
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
                       selected
-                        ? "border-amber-500/60 bg-amber-500/[0.07] text-white"
-                        : "border-white/[0.09] bg-[#0b0c0e] text-slate-300 hover:border-white/20 hover:text-white"
+                        ? "border-amber-500 bg-amber-500 text-black"
+                        : "border-slate-600",
                     )}
                   >
-                    <span
-                      className={cn(
-                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition",
-                        selected
-                          ? "border-amber-400"
-                          : "border-slate-500 group-hover:border-slate-400"
-                      )}
-                    >
-                      {selected && (
-                        <span className="h-2 w-2 rounded-full bg-amber-400" />
-                      )}
-                    </span>
-                    <span className="truncate">{amenity}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </Section>
+                    {selected && <CheckIcon />}
+                  </span>
 
-          <Section title="Detailed Overview">
-            <Field label="What should a creator know before booking?">
-              <textarea
-                name="overview"
-                rows={5}
-                value={form.overview}
-                onChange={update}
-                required
-                placeholder="Sunlight from 9am, 12ft ceilings, a 20ft cyc wall, and a private changing room. Loading access through the freight elevator on the north side."
-                className={cn(inputClass, "resize-y leading-6")}
+                  <span>{amenity}</span>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+
+        {/* OVERVIEW */}
+        <Section
+          number="05"
+          title="Studio overview"
+          description="Give potential customers a clear picture of the experience your space offers."
+        >
+          <Field label="Detailed description">
+            <textarea
+              name="overview"
+              rows={7}
+              value={form.overview}
+              onChange={update}
+              required
+              placeholder="Describe your studio, its atmosphere, equipment, natural lighting, available facilities and what makes it unique..."
+              className={cn(inputClass, "min-h-[180px] resize-y leading-7")}
+            />
+          </Field>
+        </Section>
+
+        {/* HOST INFORMATION */}
+        <Section
+          number="06"
+          title="Owner information"
+          description="Your account information will be attached to this listing."
+        >
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <Field label="Owner name">
+              <input
+                value={host?.name ?? "—"}
+                readOnly
+                className={readOnlyInputClass}
               />
             </Field>
 
-            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="User Name">
-                <input
-                  value={host?.name ?? "—"}
-                  readOnly
-                  aria-readonly="true"
-                  className={cn(
-                    inputClass,
-                    "cursor-not-allowed text-slate-400"
-                  )}
-                />
-              </Field>
+            <Field label="Owner email">
+              <input
+                value={host?.email ?? "—"}
+                readOnly
+                className={readOnlyInputClass}
+              />
+            </Field>
 
-              <Field label="User Email">
-                <input
-                  value={host?.email ?? "—"}
-                  readOnly
-                  aria-readonly="true"
-                  className={cn(
-                    inputClass,
-                    "cursor-not-allowed text-slate-400"
-                  )}
-                />
-              </Field>
-            </div>
+            <Field label="Owner image URL">
+              <input
+                value={host?.image ?? ""}
+                readOnly
+                className={readOnlyInputClass}
+              />
+            </Field>
 
-            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Owner Image URL">
-                <input
-                  value={host?.image ?? ""}
-                  readOnly
-                  aria-readonly="true"
-                  className={cn(
-                    inputClass,
-                    "cursor-not-allowed text-slate-400"
-                  )}
-                />
-              </Field>
-
-              <Field label="Rating">
-                <input
-                  type="number"
-                  min="0"
-                  max="5"
-                  step="0.1"
-                  value={form.rating ?? 5}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      rating: event.target.value,
-                    }))
-                  }
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-
-            <p className="mt-3 text-sm text-slate-500">
-              Contact details come from your account and can&apos;t be edited on
-              a listing.
-            </p>
-          </Section>
-
-          {error && (
-            <p
-              role="alert"
-              className="rounded-xl border border-red-500/20 bg-red-500/[0.05] px-4 py-3 text-base text-red-300"
-            >
-              {error}
-            </p>
-          )}
-
-          <div className="flex justify-end pt-1">
-            <button
-              type="submit"
-              disabled={submitting || uploading}
-              className="rounded-full bg-amber-500 px-7 py-3 text-base font-bold text-black transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {submitting ? copy.submitting : copy.submit}
-            </button>
+            <Field label="Rating">
+              <input
+                type="number"
+                min="0"
+                max="5"
+                step="0.1"
+                value={form.rating ?? 5}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    rating: event.target.value,
+                  }))
+                }
+                className={inputClass}
+              />
+            </Field>
           </div>
-        </form>
-      </div>
-    </main>
+
+          <p className="mt-4 text-xs leading-6 text-slate-500">
+            Your contact information comes from your account and is displayed
+            here for reference.
+          </p>
+        </Section>
+
+        {/* ERROR */}
+        {error && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/[0.06] px-5 py-4 text-sm leading-6 text-red-300"
+          >
+            <AlertIcon />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* SUBMIT */}
+        <div className="flex flex-col gap-5 border-t border-white/[0.08] pt-7 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-white">
+              Ready to publish?
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Review your information before making your listing available.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting || uploading}
+            className="inline-flex min-h-[54px] items-center justify-center gap-3 rounded-xl bg-amber-500 px-8 py-4 text-sm font-bold text-black shadow-lg shadow-amber-500/10 transition hover:bg-amber-400 hover:shadow-amber-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {submitting ? (
+              <>
+                <Spinner />
+                {copy.submitting}
+              </>
+            ) : (
+              <>
+                {copy.submit}
+                <ArrowIcon />
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 
+/* STYLES */
+
 const inputClass =
-  "w-full rounded-lg border border-white/[0.09] bg-[#0b0c0e] px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-600 focus:border-amber-500/70 focus:ring-2 focus:ring-amber-500/10";
+  "w-full min-h-[54px] rounded-xl border border-white/[0.09] bg-[#0b0f16] px-5 py-3.5 text-base text-white outline-none transition placeholder:text-slate-600 hover:border-white/15 focus:border-amber-500/70 focus:ring-4 focus:ring-amber-500/[0.07]";
+
+const readOnlyInputClass =
+  "w-full min-h-[54px] cursor-not-allowed rounded-xl border border-white/[0.06] bg-[#0b0f16] px-5 py-3.5 text-base text-slate-500 outline-none";
 
 const secondaryButtonClass =
-  "inline-flex items-center justify-center gap-2 rounded-lg border border-white/[0.1] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/[0.07]";
+  "inline-flex min-h-[46px] items-center justify-center gap-2.5 rounded-xl border border-white/[0.1] bg-white/[0.04] px-5 py-3 text-sm font-semibold text-white transition hover:border-amber-500/40 hover:bg-amber-500/[0.06]";
 
-function Section({ title, description, children }) {
+/* REUSABLE COMPONENTS */
+
+function Section({ number, title, description, children }) {
   return (
-    <section className="rounded-2xl border border-white/[0.08] bg-[#111214] p-5 sm:p-6">
-      <h2 className="text-xl font-semibold tracking-tight text-white">
-        {title}
-      </h2>
-      {description && (
-        <p className="mt-1.5 text-sm leading-6 text-slate-500">{description}</p>
-      )}
-      <div className="mt-5">{children}</div>
+    <section className="rounded-2xl border border-white/[0.08] bg-[#111722] p-5 sm:p-7 lg:p-8">
+      <div className="mb-7 flex items-start gap-4 border-b border-white/[0.07] pb-5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-500/20 bg-amber-500/[0.07] text-xs font-bold text-amber-400">
+          {number}
+        </span>
+
+        <div>
+          <h3 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+            {title}
+          </h3>
+
+          {description && (
+            <p className="mt-1.5 text-sm leading-6 text-slate-400">
+              {description}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {children}
     </section>
   );
 }
 
 function Field({ label, children }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-200">
+    <label className="block min-w-0">
+      <span className="mb-2.5 block text-sm font-semibold text-slate-200">
         {label}
       </span>
+
       {children}
     </label>
   );
 }
 
+/* IMAGE PROCESSING */
+
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
+
     reader.readAsDataURL(file);
   });
 }
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
-    const image = new Image();
+    const image = new window.Image();
+
     image.onload = () => resolve(image);
     image.onerror = reject;
     image.src = src;
@@ -662,23 +771,26 @@ function loadImage(src) {
 async function compressImage(file) {
   const source = await readFileAsDataUrl(file);
   const image = await loadImage(source);
+
   const maxDimension = 1600;
-  const scale = Math.min(
-    1,
-    maxDimension / Math.max(image.width, image.height)
-  );
+
+  const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
 
   const canvas = document.createElement("canvas");
+
   canvas.width = width;
   canvas.height = height;
 
   const context = canvas.getContext("2d");
+
   if (!context) return source;
 
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, width, height);
+
   context.drawImage(image, 0, 0, width, height);
 
   let quality = 0.82;
@@ -692,6 +804,8 @@ async function compressImage(file) {
   return result;
 }
 
+/* ICONS */
+
 function ChevronDown() {
   return (
     <svg
@@ -699,7 +813,7 @@ function ChevronDown() {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+      className="pointer-events-none absolute right-5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
     >
       <path d="m6 9 6 6 6-6" />
     </svg>
@@ -713,7 +827,7 @@ function PlusIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
-      className="h-3.5 w-3.5"
+      className="h-4 w-4"
     >
       <path d="M12 5v14M5 12h14" />
     </svg>
@@ -729,7 +843,7 @@ function UploadIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-3.5 w-3.5"
+      className="h-4 w-4"
     >
       <path d="M12 16V4m0 0L8 8m4-4 4 4" />
       <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
@@ -744,14 +858,74 @@ function PhotoIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-6 w-6 text-slate-500"
+      className="h-7 w-7 text-slate-400"
     >
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="9" cy="9" r="1.5" />
       <path d="m21 15-4.5-4.5L8 19" />
-      <path d="M18 4v4m-2-2h4" />
     </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-4 w-4"
+    >
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      className="h-3 w-3"
+    >
+      <path d="m5 12 4 4L19 6" />
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="h-4 w-4"
+    >
+      <path d="M5 12h14m-6-6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="mt-0.5 h-5 w-5 shrink-0"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 8v4m0 4h.01" />
+    </svg>
+  );
+}
+
+function Spinner() {
+  return (
+    <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/20 border-t-black" />
   );
 }

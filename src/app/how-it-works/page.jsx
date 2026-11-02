@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import {
   IconArrowRight,
@@ -11,6 +12,7 @@ import {
   IconTool,
   IconWallet,
 } from "@tabler/icons-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -101,35 +103,39 @@ const GUARANTEES = [
 ];
 
 const eyebrowClass =
-  "text-[11px] font-semibold uppercase tracking-[0.22em] text-[#f5a623]";
+  "text-xs font-semibold uppercase tracking-[0.22em] text-[#f5a623]";
 
 export default function HowItWorksPage() {
   return (
     <main className="min-h-screen bg-[#050506] text-white">
-      <section className="mx-auto w-full max-w-[1160px] px-6 pb-16 pt-16">
+      {/* Hero */}
+      <section className="mx-auto w-full max-w-[1440px] px-6 pb-20 pt-20 md:px-10 lg:pb-24 lg:pt-24">
         <p className={eyebrowClass}>How it works</p>
-        <h1 className="mt-5 max-w-[620px] text-4xl font-semibold leading-[1.08] tracking-[-0.03em] text-white md:text-[44px]">
+
+        <h1 className="mt-6 max-w-[850px] text-4xl font-semibold leading-[1.08] tracking-[-0.035em] text-white sm:text-5xl lg:text-[64px]">
           Booking a studio should feel like booking a table
         </h1>
-        <p className="mt-6 max-w-[600px] text-[14px] leading-7 text-slate-400">
-          StudioSpace is peer-to-peer: creators book directly from the people who
-          own and run the spaces. No agencies, no minimum contracts, no mystery
-          fees — just the room, the hours you need, and a host who knows the
-          gear.
+
+        <p className="mt-7 max-w-[760px] text-base leading-8 text-slate-400 md:text-lg">
+          StudioSpace is peer-to-peer: creators book directly from the people
+          who own and run the spaces. No agencies, no minimum contracts, no
+          mystery fees — just the room, the hours you need, and a host who
+          knows the gear.
         </p>
 
-        <div className="mt-9 flex flex-wrap items-center gap-3">
+        <div className="mt-10 flex flex-wrap items-center gap-4">
           <Button
             render={<Link href="/studios" />}
-            className="h-10 rounded-full border border-[#f5a623] bg-[#f5a623] px-5 text-[13px] font-semibold text-[#141414] shadow-[0_0_24px_rgba(245,166,35,0.25)] transition hover:bg-[#ffb733]"
+            className="h-12 rounded-full border border-[#f5a623] bg-[#f5a623] px-7 text-sm font-semibold text-[#141414] shadow-[0_0_24px_rgba(245,166,35,0.25)] transition hover:bg-[#ffb733] md:text-base"
           >
             Explore studios
-            <IconArrowRight size={15} stroke={2} />
+            <IconArrowRight size={18} stroke={2} />
           </Button>
+
           <Button
             render={<Link href="/add-studio" />}
             variant="outline"
-            className="h-10 rounded-full border-white/15 bg-transparent px-5 text-[13px] font-semibold text-white transition hover:border-white/25 hover:bg-white/[0.04]"
+            className="h-12 rounded-full border-white/15 bg-transparent px-7 text-sm font-semibold text-white transition hover:border-white/25 hover:bg-white/[0.04] md:text-base"
           >
             Host your space
           </Button>
@@ -138,29 +144,38 @@ export default function HowItWorksPage() {
 
       <Separator className="bg-white/[0.06]" />
 
-      <section className="mx-auto w-full max-w-[1160px] px-6 py-16">
+      {/* Booking steps */}
+      <section className="mx-auto w-full max-w-[1440px] px-6 py-20 md:px-10 lg:py-24">
         <p className={eyebrowClass}>How booking works</p>
-        <h2 className="mt-4 text-[28px] font-semibold tracking-[-0.02em] text-white md:text-[32px]">
+
+        <h2 className="mt-5 text-3xl font-semibold tracking-[-0.025em] text-white md:text-4xl">
           Four steps from idea to call time
         </h2>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step) => (
             <Card
               key={step.number}
-              className="gap-0 rounded-xl bg-[#0a0a0b] py-0 text-slate-300 ring-1 ring-white/[0.08] [--card-spacing:--spacing(5)]"
+              className="gap-0 rounded-2xl bg-[#0a0a0b] py-0 text-slate-300 ring-1 ring-white/[0.08] transition duration-300 hover:-translate-y-1 hover:ring-[#f5a623]/30"
             >
-              <CardContent className="px-5 py-5">
+              <CardContent className="px-6 py-7 md:px-7 md:py-8">
                 <div className="flex items-start justify-between">
-                  <step.icon size={20} stroke={1.6} className="text-[#f5a623]" />
-                  <span className="text-[22px] font-light leading-none tracking-tight text-white/15">
+                  <step.icon
+                    size={25}
+                    stroke={1.6}
+                    className="text-[#f5a623]"
+                  />
+
+                  <span className="text-3xl font-light leading-none tracking-tight text-white/15">
                     {step.number}
                   </span>
                 </div>
-                <h3 className="mt-10 text-[14px] font-semibold text-white">
+
+                <h3 className="mt-12 text-lg font-semibold text-white">
                   {step.title}
                 </h3>
-                <p className="mt-2 text-[12.5px] leading-[1.7] text-slate-400">
+
+                <p className="mt-3 text-sm leading-7 text-slate-400">
                   {step.description}
                 </p>
               </CardContent>
@@ -171,33 +186,38 @@ export default function HowItWorksPage() {
 
       <Separator className="bg-white/[0.06]" />
 
-      <section className="mx-auto w-full max-w-[1160px] px-6 py-20">
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+      {/* Host controls */}
+      <section className="mx-auto w-full max-w-[1440px] px-6 py-20 md:px-10 lg:py-28">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-24">
           <div>
             <p className={eyebrowClass}>For hosts</p>
-            <h2 className="mt-4 max-w-[360px] text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] text-white md:text-[32px]">
+
+            <h2 className="mt-5 max-w-[500px] text-3xl font-semibold leading-[1.15] tracking-[-0.025em] text-white md:text-4xl">
               You stay in control of your room
             </h2>
-            <p className="mt-5 max-w-[360px] text-[13px] leading-6 text-slate-400">
-              Every listing is yours to run. Approve who comes in, block your own
-              calendar and step away from the booking admin.
+
+            <p className="mt-6 max-w-[480px] text-base leading-8 text-slate-400">
+              Every listing is yours to run. Approve who comes in, block your
+              own calendar and step away from the booking admin.
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {HOST_CONTROLS.map((item) => (
               <Card
                 key={item.title}
-                className="flex-row items-center gap-4 rounded-xl bg-[#0a0a0b] px-4 py-4 text-slate-300 ring-1 ring-white/[0.08]"
+                className="flex-row items-center gap-5 rounded-2xl bg-[#0a0a0b] px-5 py-6 text-slate-300 ring-1 ring-white/[0.08] transition hover:ring-white/[0.15] md:px-7"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#f5a623]/30 bg-[#f5a623]/[0.08] text-[#f5a623]">
-                  <item.icon size={17} stroke={1.7} />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#f5a623]/30 bg-[#f5a623]/[0.08] text-[#f5a623]">
+                  <item.icon size={21} stroke={1.7} />
                 </span>
+
                 <div>
-                  <h3 className="text-[13px] font-semibold text-white">
+                  <h3 className="text-base font-semibold text-white md:text-lg">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-[12.5px] leading-6 text-slate-400">
+
+                  <p className="mt-2 text-sm leading-7 text-slate-400">
                     {item.description}
                   </p>
                 </div>
@@ -207,44 +227,50 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
+      {/* Host guarantee */}
       <section
         id="host-guarantee"
-        className="mx-auto w-full max-w-[1160px] px-6 pb-20"
+        className="mx-auto w-full max-w-[1440px] px-6 pb-24 md:px-10 lg:pb-28"
       >
-        <div className="rounded-2xl border border-white/[0.07] bg-[#0b0b0c] p-6 md:p-10">
-          <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)] lg:gap-12">
+        <div className="rounded-3xl border border-white/[0.07] bg-[#0b0b0c] p-7 md:p-10 lg:p-12">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)] lg:gap-16">
             <div>
               <p className={eyebrowClass}>Host guarantee</p>
-              <h2 className="mt-4 max-w-[300px] text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-white md:text-[30px]">
+
+              <h2 className="mt-5 max-w-[420px] text-3xl font-semibold leading-[1.15] tracking-[-0.025em] text-white md:text-4xl">
                 Protection for the room and the people in it
               </h2>
-              <p className="mt-5 max-w-[300px] text-[13px] leading-6 text-slate-400">
+
+              <p className="mt-6 max-w-[420px] text-base leading-8 text-slate-400">
                 Creators get real support when a shoot goes sideways. Hosts get
                 peace of mind that a booking won&apos;t cost them their gear.
               </p>
+
               <Button
                 render={<Link href="#host-guarantee" />}
-                className="mt-7 h-9 rounded-full border border-[#f5a623] bg-[#f5a623] px-4 text-[12.5px] font-semibold text-[#141414] transition hover:bg-[#ffb733]"
+                className="mt-8 h-11 rounded-full border border-[#f5a623] bg-[#f5a623] px-6 text-sm font-semibold text-[#141414] transition hover:bg-[#ffb733]"
               >
                 Read the guarantee
-                <IconArrowRight size={14} stroke={2} />
+                <IconArrowRight size={17} stroke={2} />
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
               {GUARANTEES.map((item) => (
                 <Card
                   key={item.title}
-                  className="gap-0 rounded-lg bg-[#0a0a0b] py-0 text-slate-300 ring-1 ring-white/[0.08] [--card-spacing:--spacing(4)]"
+                  className="gap-0 rounded-xl bg-[#0a0a0b] py-0 text-slate-300 ring-1 ring-white/[0.08] transition hover:ring-[#f5a623]/25"
                 >
-                  <CardHeader className="px-4 pt-4">
-                    <span className="mb-3 flex h-8 w-8 items-center justify-center rounded-md border border-[#f5a623]/25 bg-[#f5a623]/[0.08] text-[#f5a623]">
-                      <item.icon size={15} stroke={1.7} />
+                  <CardHeader className="px-5 pt-6 pb-6">
+                    <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-[#f5a623]/25 bg-[#f5a623]/[0.08] text-[#f5a623]">
+                      <item.icon size={19} stroke={1.7} />
                     </span>
-                    <CardTitle className="text-[12.5px] font-semibold text-white">
+
+                    <CardTitle className="text-base font-semibold leading-snug text-white">
                       {item.title}
                     </CardTitle>
-                    <CardDescription className="text-[11.5px] leading-[1.65] text-slate-400">
+
+                    <CardDescription className="mt-2 text-sm leading-7 text-slate-400">
                       {item.description}
                     </CardDescription>
                   </CardHeader>
@@ -257,3 +283,4 @@ export default function HowItWorksPage() {
     </main>
   );
 }
+

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import StudioCard from "@/components/StudioCard";
 import SkeletonCard from "@/components/SkeletonCard";
 
@@ -12,10 +12,22 @@ const CATEGORIES = [
   "Podcast Lounges",
   "Music Suites",
   "Art Workshops",
+  "Creative Offices",
 ];
 
 export default function ExploreStudiosPage() {
+  return (
+    <Suspense
+      fallback={<main className="min-h-screen bg-[#090b10] text-white" />}
+    >
+      <ExploreStudiosPageContent />
+    </Suspense>
+  );
+}
+
+function ExploreStudiosPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [studios, setStudios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +35,15 @@ export default function ExploreStudiosPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("All categories");
   const [maxRate, setMaxRate] = useState(500);
+
+  useEffect(() => {
+    const categoryFromUrl = searchParams.get("category");
+    if (categoryFromUrl && CATEGORIES.includes(categoryFromUrl)) {
+      setCategory(categoryFromUrl);
+    } else {
+      setCategory("All categories");
+    }
+  }, [searchParams]);
 
   // Fetch studios
   useEffect(() => {
@@ -91,10 +112,28 @@ export default function ExploreStudiosPage() {
   }, [studios, searchQuery, category, maxRate]);
 
   // Reset filters
+  useEffect(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+
+    if (category === "All categories") {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", category);
+    }
+
+    const nextQuery = nextParams.toString();
+    const targetUrl = nextQuery ? `/studios?${nextQuery}` : "/studios";
+
+    if (window.location.pathname + window.location.search !== targetUrl) {
+      router.replace(targetUrl, { scroll: false });
+    }
+  }, [category, router, searchParams]);
+
   const resetFilters = () => {
     setSearchQuery("");
     setCategory("All categories");
     setMaxRate(500);
+    router.replace("/studios", { scroll: false });
   };
 
   return (

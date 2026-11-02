@@ -3,28 +3,50 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useState } from "react";
 import { useParams } from "next/navigation";
-export default function BookWorkshopNowButton() {
+import { authClient } from "@/lib/auth-client";
+
+export default function BookWorkshopNowButton({
+    studioId,
+    studioTitle = "Stage 9 Soundstage",
+    hourlyRate = 240,
+    securityDeposit = 1000,
+    availabilityText = "Available Tue, Nov 3 · 10:00-12:00",
+}) {
     const params = useParams();
-    const id = params?.id;
+    const routeStudioId = params?.id;
+    const resolvedStudioId = studioId || routeStudioId;
+    const { data: session } = authClient.useSession();
+    const user = session?.user;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [bookingLoading, setBookingLoading] = useState(false);
-    const studio = {
-        _id: id,
-        title: "Stage 9 Soundstage",
-        hourlyRate: 240,
-        securityDeposit: 1000,
-        availabilityText: "Available Tue, Nov 3 · 10:00-12:00",
-    };
     const [hours, setHours] = useState(2);
-    const totalAmount = studio.hourlyRate * hours;
+
+    const studio = {
+        _id: resolvedStudioId,
+        title: studioTitle,
+        hourlyRate,
+        securityDeposit,
+        availabilityText,
+    };
+
+    const totalAmount = Number(hourlyRate) * hours;
+
     async function handleBookingSubmit(event) {
         event.preventDefault();
+
+        if (!user?.email) {
+            alert("Please sign in to book a studio.");
+            return;
+        }
+
         setBookingLoading(true);
         const form = event.currentTarget;
         const formData = Object.fromEntries(new FormData(form));
         const payload = {
-            studioId: studio._id,
+            studioId: resolvedStudioId,
             studioTitle: studio.title,
+            email: user.email.trim().toLowerCase(),
+            userName: user.name || user.email,
             bookingDate: formData.bookingDate,
             startTime: formData.startTime,
             durationHours: Number(formData.durationHours),

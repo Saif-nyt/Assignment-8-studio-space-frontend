@@ -157,8 +157,13 @@ export default async function StudioDetailsPage({ params }) {
               </div>
 
               <div className="mt-6">
-                <button type="button" ><BookWorkshopNowButton />
-                </button>
+                <BookWorkshopNowButton
+                  studioId={id}
+                  studioTitle={title}
+                  hourlyRate={hourlyRate}
+                  securityDeposit={securityDeposit}
+                  availabilityText="Available Tue, Nov 3 · 10:00-12:00"
+                />
               </div>
             </div>
           </aside>

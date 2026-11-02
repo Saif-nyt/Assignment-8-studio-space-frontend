@@ -4,11 +4,13 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
-  "Photo Studios",
-  "Film Stages",
-  "Podcast Lounges",
-  "Music Suites",
-  "Art Workshops",
+  "Photo Studio",
+  "Film Stage",
+  "Podcast Lounge",
+  "Music Suite",
+  "Workshop",
+  "Creative Studio",
+  "Production Space",
 ];
 
 const AMENITIES = [
@@ -49,9 +51,9 @@ const EMPTY_FORM = {
   maxCapacity: "",
   hourlyRate: "",
   securityDeposit: "",
-  streetAddress: "",
-  city: "",
+  location: "",
   overview: "",
+  rating: "5",
 };
 
 const COPY = {
@@ -77,24 +79,8 @@ function text(value) {
   return value === undefined || value === null ? "" : String(value);
 }
 
-function splitLocation(location) {
-  const value = text(location).trim();
-  const commaIndex = value.indexOf(",");
-
-  if (commaIndex === -1) {
-    return { streetAddress: value, city: "" };
-  }
-
-  return {
-    streetAddress: value.slice(0, commaIndex).trim(),
-    city: value.slice(commaIndex + 1).trim(),
-  };
-}
-
 function buildForm(studio) {
   if (!studio) return EMPTY_FORM;
-
-  const { streetAddress, city } = splitLocation(studio.location);
 
   return {
     title: text(studio.title),
@@ -102,9 +88,9 @@ function buildForm(studio) {
     maxCapacity: text(studio.maxCapacity),
     hourlyRate: text(studio.hourlyRate),
     securityDeposit: text(studio.securityDeposit),
-    streetAddress,
-    city,
+    location: text(studio.location),
     overview: text(studio.overview),
+    rating: text(studio.rating ?? 5),
   };
 }
 
@@ -247,11 +233,7 @@ export default function StudioForm({
     const payload = {
       title: form.title.trim(),
       category: form.category,
-      location: [form.streetAddress.trim(), form.city.trim()]
-        .filter(Boolean)
-        .join(", "),
-      streetAddress: form.streetAddress.trim(),
-      city: form.city.trim(),
+      location: form.location.trim(),
       hourlyRate: Number(form.hourlyRate),
       securityDeposit: Number(form.securityDeposit),
       maxCapacity: Number(form.maxCapacity),
@@ -259,6 +241,7 @@ export default function StudioForm({
       images: photos,
       amenities,
       overview: form.overview.trim(),
+      rating: Number(form.rating ?? 5),
     };
 
     try {
@@ -369,37 +352,24 @@ export default function StudioForm({
             </div>
           </Section>
 
-          <Section title="Location">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Street address">
-                <input
-                  name="streetAddress"
-                  value={form.streetAddress}
-                  onChange={update}
-                  required
-                  placeholder="112 Foundry Lane, Unit 3"
-                  className={inputClass}
-                />
-              </Field>
-
-              <Field label="City">
-                <input
-                  name="city"
-                  value={form.city}
-                  onChange={update}
-                  required
-                  placeholder="Brooklyn, NY"
-                  className={inputClass}
-                />
-              </Field>
-            </div>
+          <Section title="Location / Address">
+            <Field label="Location">
+              <input
+                name="location"
+                value={form.location}
+                onChange={update}
+                required
+                placeholder="Gulshan 2, Dhaka, Bangladesh"
+                className={inputClass}
+              />
+            </Field>
           </Section>
 
           <Section
             title="Photos"
-            description="Upload from your device (stored publicly — anyone with the link can open them) or paste an image URL. The first photo becomes your cover."
+            description="Upload from your device or paste an image URL. The first photo becomes your cover."
           >
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <Field label="Image URL">
               <input
                 value={photoUrl}
                 onChange={(event) => setPhotoUrl(event.target.value)}
@@ -409,9 +379,12 @@ export default function StudioForm({
                     addPhotoLink();
                   }
                 }}
-                placeholder="https://static.vecteezy.com/system/resources/thumbnails/070/716/098/small/high-tech-music-studio-with-vibrant-neon-lighting-and-equipment-arrangement-photo.jpg"
+                placeholder="https://images.unsplash.com/..."
                 className={cn(inputClass, "flex-1")}
               />
+            </Field>
+
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
 
               <div className="flex gap-2">
                 <button
@@ -537,7 +510,7 @@ export default function StudioForm({
             </div>
           </Section>
 
-          <Section title="Detailed overview">
+          <Section title="Detailed Overview">
             <Field label="What should a creator know before booking?">
               <textarea
                 name="overview"
@@ -551,7 +524,7 @@ export default function StudioForm({
             </Field>
 
             <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Host name">
+              <Field label="User Name">
                 <input
                   value={host?.name ?? "—"}
                   readOnly
@@ -563,7 +536,7 @@ export default function StudioForm({
                 />
               </Field>
 
-              <Field label="Host email">
+              <Field label="User Email">
                 <input
                   value={host?.email ?? "—"}
                   readOnly
@@ -572,6 +545,37 @@ export default function StudioForm({
                     inputClass,
                     "cursor-not-allowed text-slate-400"
                   )}
+                />
+              </Field>
+            </div>
+
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Field label="Owner Image URL">
+                <input
+                  value={host?.image ?? ""}
+                  readOnly
+                  aria-readonly="true"
+                  className={cn(
+                    inputClass,
+                    "cursor-not-allowed text-slate-400"
+                  )}
+                />
+              </Field>
+
+              <Field label="Rating">
+                <input
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  value={form.rating ?? 5}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      rating: event.target.value,
+                    }))
+                  }
+                  className={inputClass}
                 />
               </Field>
             </div>

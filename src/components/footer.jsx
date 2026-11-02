@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import Link from "next/link";
 const exploreLinks = [
     { label: "Discover studios", href: "/studios" },
-    { label: "How it works", href: "/#how-it-works" },
+    { label: "How it works", href: "/how-it-works" },
     { label: "About StudioSpace", href: "/about" },
 ];
 const hostLinks = [

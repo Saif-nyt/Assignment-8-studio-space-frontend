@@ -13,6 +13,7 @@ import {
   IconMenu2,
   IconMoon,
   IconSun,
+  IconX,
 } from "@tabler/icons-react";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -35,13 +36,12 @@ function getInitials(user) {
   const name = user?.name?.trim();
 
   if (name) {
-    const initials = name
+    return name
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])
-      .join("");
-
-    return initials.toUpperCase();
+      .join("")
+      .toUpperCase();
   }
 
   if (user?.email) return user.email[0].toUpperCase();
@@ -56,6 +56,7 @@ function Navbar() {
   const mobileMenuRef = useRef(null);
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState("dark");
@@ -63,11 +64,20 @@ function Navbar() {
   useEffect(() => {
     const savedTheme = localStorage.getItem("studio-space-theme");
     const preferredTheme =
-      savedTheme || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      savedTheme ||
+      (window.matchMedia("(prefers-color-scheme: light)").matches
+        ? "light"
+        : "dark");
 
     setTheme(preferredTheme);
-    document.documentElement.classList.toggle("dark", preferredTheme === "dark");
-    document.documentElement.classList.toggle("light", preferredTheme === "light");
+    document.documentElement.classList.toggle(
+      "dark",
+      preferredTheme === "dark",
+    );
+    document.documentElement.classList.toggle(
+      "light",
+      preferredTheme === "light",
+    );
   }, []);
 
   useEffect(() => {
@@ -83,6 +93,7 @@ function Navbar() {
     const onPointerDown = (event) => {
       if (!menuRef.current?.contains(event.target)) setOpen(false);
     };
+
     const onKeyDown = (event) => {
       if (event.key === "Escape") setOpen(false);
     };
@@ -100,8 +111,11 @@ function Navbar() {
     if (!mobileOpen) return;
 
     const onPointerDown = (event) => {
-      if (!mobileMenuRef.current?.contains(event.target)) setMobileOpen(false);
+      if (!mobileMenuRef.current?.contains(event.target)) {
+        setMobileOpen(false);
+      }
     };
+
     const onKeyDown = (event) => {
       if (event.key === "Escape") setMobileOpen(false);
     };
@@ -122,15 +136,15 @@ function Navbar() {
   const handleHashLinkClick = (event, href) => {
     if (!href.startsWith("/#")) return;
 
-    if (pathname !== "/") {
-      return;
-    }
+    if (pathname !== "/") return;
 
     event.preventDefault();
+
     document.getElementById("HowBookingWorks")?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
+
     setMobileOpen(false);
     setOpen(false);
     window.history.pushState(null, "", href);
@@ -144,7 +158,8 @@ function Navbar() {
     router.refresh();
   }
 
-  const toggleTheme = () => setTheme((current) => (current === "dark" ? "light" : "dark"));
+  const toggleTheme = () =>
+    setTheme((current) => (current === "dark" ? "light" : "dark"));
 
   return (
     <header
@@ -155,18 +170,19 @@ function Navbar() {
           : "border-slate-200 bg-white/90 shadow-[0_1px_0_rgba(15,23,42,0.06)]",
       )}
     >
-      <div className="mx-auto flex max-w-[1600px] items-center justify-between px-5 py-4 lg:px-8">
+      <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-2 px-3 py-3 sm:px-5 sm:py-4 lg:px-8">
         <Link
           href="/"
           className={cn(
-            "flex items-center gap-3 transition-colors",
+            "flex min-w-0 shrink items-center gap-2 sm:gap-3",
             theme === "dark" ? "text-white" : "text-slate-900",
           )}
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7b21a] text-[#0b1220] shadow-[0_0_25px_rgba(247,178,26,0.5)]">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f7b21a] text-[#0b1220] shadow-[0_0_25px_rgba(247,178,26,0.5)] sm:h-10 sm:w-10">
             <IconCamera size={18} stroke={2.5} />
           </div>
-          <span className="text-2xl font-black tracking-[-0.04em] sm:text-[2rem]">
+
+          <span className="truncate text-xl font-black tracking-[-0.04em] sm:text-2xl lg:text-[2rem]">
             Studio<span className="text-[#f7b21a]">Space</span>
           </span>
         </Link>
@@ -205,35 +221,40 @@ function Navbar() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <button
             type="button"
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+            }
             onClick={toggleTheme}
             className={cn(
-              "inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors",
+              "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors sm:h-10 sm:w-10",
               theme === "dark"
                 ? "border-white/10 bg-white/5 text-amber-300 hover:border-white/20 hover:bg-white/10"
                 : "border-slate-200 bg-slate-100 text-slate-700 hover:border-slate-300 hover:bg-slate-200",
             )}
           >
-            {theme === "dark" ? <IconSun size={18} stroke={2} /> : <IconMoon size={18} stroke={2} />}
+            {theme === "dark" ? (
+              <IconSun size={18} stroke={2} />
+            ) : (
+              <IconMoon size={18} stroke={2} />
+            )}
           </button>
 
           {isPending ? (
-            <span className="h-10 w-10 animate-pulse rounded-full bg-white/5" />
+            <span className="h-9 w-9 shrink-0 animate-pulse rounded-full bg-white/5 sm:h-10 sm:w-10" />
           ) : user ? (
-            <div ref={menuRef} className="relative">
+            <div ref={menuRef} className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => setOpen((current) => !current)}
                 aria-label={`Open account menu for ${user.name || user.email}`}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border-2 border-[#f7b21a]/80 bg-[#221a0b] text-[13px] font-bold tracking-wide text-[#f7b21a] transition hover:border-[#f7b21a]"
+                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-[#f7b21a]/80 bg-[#221a0b] text-[13px] font-bold text-[#f7b21a] transition hover:border-[#f7b21a] sm:h-10 sm:w-10"
               >
                 {user.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.image}
                     alt=""
@@ -263,11 +284,24 @@ function Navbar() {
                     >
                       {user.name}
                     </p>
-                    <p className={cn("mt-0.5 truncate text-[12px]", theme === "dark" ? "text-slate-400" : "text-slate-500")}>{user.email}</p>
+                    <p
+                      className={cn(
+                        "mt-0.5 truncate text-[12px]",
+                        theme === "dark" ? "text-slate-400" : "text-slate-500",
+                      )}
+                    >
+                      {user.email}
+                    </p>
                   </div>
 
-                  <div className={cn("border-t py-1.5", theme === "dark" ? "border-white/[0.07]" : "border-slate-200")}
->
+                  <div
+                    className={cn(
+                      "border-t py-1.5",
+                      theme === "dark"
+                        ? "border-white/[0.07]"
+                        : "border-slate-200",
+                    )}
+                  >
                     {ACCOUNT_LINKS.map((item) => (
                       <Link
                         key={item.label}
@@ -287,7 +321,14 @@ function Navbar() {
                     ))}
                   </div>
 
-                  <div className={cn("border-t", theme === "dark" ? "border-white/[0.07]" : "border-slate-200")}>
+                  <div
+                    className={cn(
+                      "border-t",
+                      theme === "dark"
+                        ? "border-white/[0.07]"
+                        : "border-slate-200",
+                    )}
+                  >
                     <button
                       type="button"
                       role="menuitem"
@@ -314,11 +355,10 @@ function Navbar() {
               >
                 Login
               </Link>
+
               <Link
                 href="/sign-up"
-                className={cn(
-                  "inline-flex items-center justify-center rounded-full border border-[#f7b21a] bg-[#f7b21a] px-5 py-2.5 text-sm font-semibold text-[#121b2b] shadow-[0_0_25px_rgba(247,178,26,0.3)] transition hover:bg-[#ffbf38]",
-                )}
+                className="inline-flex items-center justify-center rounded-full border border-[#f7b21a] bg-[#f7b21a] px-3 py-2 text-xs font-semibold text-[#121b2b] shadow-[0_0_25px_rgba(247,178,26,0.3)] transition hover:bg-[#ffbf38] sm:px-5 sm:py-2.5 sm:text-sm"
               >
                 Register
               </Link>
@@ -331,13 +371,13 @@ function Navbar() {
             aria-label="Toggle navigation menu"
             aria-expanded={mobileOpen}
             className={cn(
-              "inline-flex h-10 w-10 items-center justify-center rounded-full border md:hidden",
+              "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition md:hidden sm:h-10 sm:w-10",
               theme === "dark"
-                ? "border-white/10 bg-white/5 text-white"
-                : "border-slate-200 bg-slate-100 text-slate-700",
+                ? "border-white/10 bg-white/5 text-white hover:bg-white/10"
+                : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200",
             )}
           >
-            <IconMenu2 size={18} />
+            {mobileOpen ? <IconX size={19} /> : <IconMenu2 size={19} />}
           </button>
         </div>
       </div>
@@ -346,7 +386,7 @@ function Navbar() {
         <div
           ref={mobileMenuRef}
           className={cn(
-            "absolute right-4 top-[calc(100%+8px)] z-[60] w-[220px] rounded-2xl border p-2 shadow-[0_24px_70px_rgba(0,0,0,0.6)] md:hidden",
+            "absolute right-3 top-[calc(100%+8px)] z-[60] w-[min(88vw,280px)] rounded-2xl border p-2 shadow-[0_24px_70px_rgba(0,0,0,0.6)] md:hidden",
             theme === "dark"
               ? "border-white/10 bg-[#0d141a]/95"
               : "border-slate-200 bg-white/95",
@@ -371,7 +411,10 @@ function Navbar() {
                   theme === "dark"
                     ? "hover:bg-white/5 hover:text-white"
                     : "hover:bg-slate-100 hover:text-slate-900",
-                  isActive(item.href) && (theme === "dark" ? "bg-white/5 text-white" : "bg-slate-100 text-slate-900"),
+                  isActive(item.href) &&
+                    (theme === "dark"
+                      ? "bg-white/5 text-white"
+                      : "bg-slate-100 text-slate-900"),
                 )}
               >
                 {item.label}
@@ -380,9 +423,15 @@ function Navbar() {
           </nav>
 
           {!user && (
-            <div className={cn("mt-2 grid grid-cols-2 gap-2 border-t pt-2", theme === "dark" ? "border-white/10" : "border-slate-200")}>
+            <div
+              className={cn(
+                "mt-2 grid grid-cols-2 gap-2 border-t pt-2",
+                theme === "dark" ? "border-white/10" : "border-slate-200",
+              )}
+            >
               <Link
                 href="/login"
+                onClick={() => setMobileOpen(false)}
                 className={cn(
                   "rounded-full border py-2 text-center text-sm font-medium",
                   theme === "dark"
@@ -392,8 +441,10 @@ function Navbar() {
               >
                 Login
               </Link>
+
               <Link
                 href="/sign-up"
+                onClick={() => setMobileOpen(false)}
                 className="rounded-full bg-[#f7b21a] py-2 text-center text-sm font-semibold text-[#121b2b]"
               >
                 Register

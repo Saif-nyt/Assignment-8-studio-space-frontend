@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StudioForm from "@/components/studio-form";
 import { authClient } from "@/lib/auth-client";
+import Image from "next/image";
 
 export default function AddStudioPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function AddStudioPage() {
   if (!user) return null;
 
   async function handleCreate(payload) {
-    const API_BASE =  process.env.NEXT_PUBLIC_BACKEND_URL || "https://assignment-8-studio-space-backend.vercel.app" || "http://localhost:5001";
+    const API_BASE =  process.env.NEXT_PUBLIC_BACKEND_URL  || "http://localhost:5001";
 
     let jwtToken;
     try {
@@ -108,7 +109,7 @@ export default function AddStudioPage() {
             {/* Owner Information */}
             <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4">
               {user.image ? (
-                <img
+                <Image width={100} height={100}
                   src={user.image}
                   alt={user.name || "Studio owner"}
                   className="h-11 w-11 rounded-full object-cover"

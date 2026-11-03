@@ -8,9 +8,9 @@ const fallbackImage =
   "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80";
 
 const API_BASE =
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://assignment-8-studio-space-backend.vercel.app";
+
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001"
+  
 
 async function getBookings(email, token) {
   try {

@@ -7,8 +7,8 @@ import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 const API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://assignment-8-studio-space-backend.vercel.app";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001"
+
 
 const CATEGORIES = [
   "Photo Studio",

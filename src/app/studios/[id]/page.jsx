@@ -34,8 +34,9 @@ const jwtToken = await auth.api.getToken({
 if (!jwtToken?.token) {
   redirect("/login");
 }
-
-const res = await fetch(`http://localhost:5001/studios/${id}`, {
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+const res = await fetch(`${API_BASE_URL}/studios/${id}`, {
   method: "GET",
   headers: {
     Authorization: `Bearer ${jwtToken.token}`,

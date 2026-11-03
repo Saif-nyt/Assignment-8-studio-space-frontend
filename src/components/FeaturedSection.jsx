@@ -17,7 +17,7 @@ export default function FeaturedStudios() {
 
     const fetchFeaturedStudios = async () => {
       try {
-        const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "https://assignment-8-studio-space-backend.vercel.app" || "http://localhost:5001";
+        const API_BASE =  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
         const response = await fetch(`${API_BASE}/studios/featured`, {
           signal: controller.signal,
         });

@@ -1,24 +1,52 @@
 import Image from "next/image";
 import BookWorkshopNowButton from "../../../components/BookWorkshopNowButton";
+import { auth } from "../../../lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioDetailsPage({ params }) {
   const { id } = await params;
 
-  const res = await fetch(
-    `process.env.BACKEND_URL/studios/${id}` ||
-      `http://localhost:5001/studios/${id}`,
-    {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-store",
-    },
-  );
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch studio details");
-  }
+
+
+
+
+const requestHeaders = await headers();
+
+const session = await auth.api.getSession({
+  headers: requestHeaders,
+  query: {
+    disableCookieCache: true,
+  },
+});
+
+if (!session) {
+  redirect("/login");
+}
+
+const jwtToken = await auth.api.getToken({
+  headers: requestHeaders,
+});
+
+if (!jwtToken?.token) {
+  redirect("/login");
+}
+
+const res = await fetch(`http://localhost:5001/studios/${id}`, {
+  method: "GET",
+  headers: {
+    Authorization: `Bearer ${jwtToken.token}`,
+  },
+  cache: "no-store",
+});
+
+if (!res.ok) {
+  throw new Error("Failed to fetch studio details");
+}
+
 
   const studio = await res.json();
   const title = studio.title || "Studio Workspace";

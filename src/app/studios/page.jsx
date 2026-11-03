@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import StudioCard from "@/components/StudioCard";
 import SkeletonCard from "@/components/SkeletonCard";
-
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 const CATEGORIES = [
   "All categories",
   "Photo Studios",
@@ -51,9 +51,8 @@ function ExploreStudiosPageContent() {
 
     async function fetchStudios() {
       try {
-        const res = await fetch(
-          process.env.BACKEND_URL/studios || "http://localhost:5001/studios",
-          {
+        const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";                      
+        const res = await fetch(`${API_BASE}/studios`, {
             signal: controller.signal,
           },
         );

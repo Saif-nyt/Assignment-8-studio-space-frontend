@@ -4,31 +4,44 @@ import { redirect, notFound } from "next/navigation";
 import StudioForm from "@/components/studio-form";
 
 export default async function EditStudioPage({ params }) {
-  
+  const { id } = await params;
+
+  const requestHeaders = await headers();
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: requestHeaders,
+    query: {
+      disableCookieCache: true,
+    },
   });
 
-  const user = session?.user;
-
-  if (!user?.email) {
+  if (!session?.user?.email) {
     redirect("/login");
   }
 
-  
-  const { id } = await params;
+  const jwtToken = await auth.api.getToken({
+    headers: requestHeaders,
+  });
 
- 
+  if (!jwtToken?.token) {
+    redirect("/login");
+  }
+
+  const user = session.user;
+
   let studio;
 
   try {
-    const res = await fetch(
-      `process.env.BACKEND_URL/studios/${id}` ||
-        `http://localhost:5001/studios/${id}`,
-      {
-        cache: "no-store",
+    const API_BASE =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
+    const res = await fetch(`${API_BASE}/studios/${id}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${jwtToken.token}`,
       },
-    );
+      cache: "no-store",
+    });
 
     if (res.status === 404) {
       notFound();
@@ -48,7 +61,6 @@ export default async function EditStudioPage({ params }) {
     notFound();
   }
 
- 
   if (
     (studio.ownerEmail || "").trim().toLowerCase() !==
     user.email.trim().toLowerCase()

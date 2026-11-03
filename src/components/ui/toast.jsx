@@ -64,4 +64,13 @@ function Toaster({ children, toastManager = toast, ...props }) {
 }
 const createToastManager = ToastPrimitive.createToastManager;
 const useToastManager = ToastPrimitive.useToastManager;
-export { Toaster, Toast, ToastAction, ToastClose, ToastContent, ToastDescription, ToastPortal, ToastProvider, ToastTitle, ToastViewport, createToastManager, toast, useToastManager, };
+
+function showToast({ title, description, type = "info" }) {
+    toast.add({
+        title,
+        description,
+        type,
+    });
+}
+
+export { Toaster, Toast, ToastAction, ToastClose, ToastContent, ToastDescription, ToastPortal, ToastProvider, ToastTitle, ToastViewport, createToastManager, showToast, toast, useToastManager, };

@@ -1,4 +1,7 @@
 import { createAuthClient } from "better-auth/react";
+import { jwtClient } from "better-auth/client/plugins";
 
-// Same origin: the handler lives at /api/auth/[...all].
-export const authClient = createAuthClient();
+export const authClient = createAuthClient({
+  baseURL: process.env.NEXT_PUBLIC_AUTH_URL || "http://localhost:3000",
+  plugins: [jwtClient()],
+});

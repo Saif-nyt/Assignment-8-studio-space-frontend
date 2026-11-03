@@ -98,10 +98,8 @@ const Page = async () => {
   let fetchError = false;
 
   try {
-    const res = await fetch(
-      `process.env.BACKEND_URL/studios` ||
-        `http://localhost:5001/studios`,
-      {
+    const API_BASE = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "https://assignment-8-studio-space-backend.vercel.app" || "http://localhost:5001";
+    const res = await fetch(`${API_BASE}/studios`, {
         cache: "no-store",
       },
     );

@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/lib/auth";
@@ -8,23 +7,61 @@ import CancelBookingButton from "@/components/CancelBookingButton";
 const fallbackImage =
   "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80";
 
-async function getBookings(email) {
+const API_BASE =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://assignment-8-studio-space-backend.vercel.app";
+
+async function getBookings(email, token) {
   try {
     const res = await fetch(
-      `process.env.BACKEND_URL/my-bookings/${encodeURIComponent(email)}` ||
-        `http://localhost:5001/my-bookings/${encodeURIComponent(email)}`,
+      `${API_BASE}/my-bookings/${encodeURIComponent(email)}`,
       {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         cache: "no-store",
       },
     );
 
     if (!res.ok) {
-      console.error("Booking API error:", res.status);
+      console.error("Booking API error:", res.status, await res.text());
       return [];
     }
 
     const data = await res.json();
-    return Array.isArray(data) ? data : [];
+    const bookings = Array.isArray(data)
+      ? data
+      : Array.isArray(data.bookings)
+        ? data.bookings
+        : [];
+
+    const studiosRes = await fetch(`${API_BASE}/studios`, {
+      cache: "no-store",
+    });
+
+    let studioImages = {};
+
+    if (studiosRes.ok) {
+      const studiosData = await studiosRes.json();
+      const studios = Array.isArray(studiosData)
+        ? studiosData
+        : Array.isArray(studiosData.studios)
+          ? studiosData.studios
+          : [];
+
+      studioImages = Object.fromEntries(
+        studios.map((studio) => [
+          String(studio._id),
+          studio.image || studio.images?.[0] || null,
+        ]),
+      );
+    }
+
+    return bookings.map((booking) => ({
+      ...booking,
+      image: booking.image || studioImages[String(booking.studioId)] || null,
+    }));
   } catch (error) {
     console.error("Failed to fetch bookings:", error);
     return [];
@@ -52,19 +89,41 @@ function getEndTime(startTime, duration) {
 
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return "--:--";
 
-  const end = new Date();
-  end.setHours(hours + Number(duration), minutes, 0, 0);
+  const endMinutes = hours * 60 + minutes + Number(duration) * 60;
+  const normalizedMinutes = ((endMinutes % 1440) + 1440) % 1440;
 
-  return end.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const endHours = Math.floor(normalizedMinutes / 60);
+  const endMinute = normalizedMinutes % 60;
+
+  return `${String(endHours).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+}
+
+function getStatusStyle(status) {
+  const normalized = String(status || "PENDING").toUpperCase();
+
+  if (normalized === "CONFIRMED") {
+    return "border-emerald-500/20 bg-emerald-500/10 text-emerald-400";
+  }
+
+  if (normalized === "CANCELLED") {
+    return "border-red-500/20 bg-red-500/10 text-red-400";
+  }
+
+  if (normalized === "COMPLETED") {
+    return "border-blue-500/20 bg-blue-500/10 text-blue-400";
+  }
+
+  return "border-amber-500/20 bg-amber-500/10 text-amber-400";
 }
 
 export default async function MyBookingsPage() {
+  const requestHeaders = await headers();
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: requestHeaders,
+    query: {
+      disableCookieCache: true,
+    },
   });
 
   const user = session?.user;
@@ -73,9 +132,7 @@ export default async function MyBookingsPage() {
     return (
       <main className="min-h-screen bg-[#020b14] px-5 py-10 text-white md:px-8 lg:px-10">
         <div className="mx-auto max-w-[1440px] rounded-[18px] border border-white/10 bg-[#0b1118] p-10 text-center">
-          <h1 className="text-3xl font-bold text-white">
-            Not logged in
-          </h1>
+          <h1 className="text-3xl font-bold text-white">Not logged in</h1>
 
           <p className="mt-3 text-base text-slate-400">
             Please sign in to view your bookings.
@@ -92,14 +149,37 @@ export default async function MyBookingsPage() {
     );
   }
 
+  const tokenResponse = await auth.api.getToken({
+    headers: requestHeaders,
+  });
+
+  const token = tokenResponse?.token;
+
+  if (!token) {
+    return (
+      <main className="min-h-screen bg-[#020b14] px-5 py-10 text-white md:px-8">
+        <div className="mx-auto max-w-[1440px] rounded-2xl border border-white/10 bg-[#0b1118] p-10 text-center">
+          <h1 className="text-2xl font-bold">Session expired</h1>
+          <p className="mt-3 text-slate-400">
+            Please sign in again to view your bookings.
+          </p>
+          <Link
+            href="/login"
+            className="mt-6 inline-flex rounded-full bg-[#f4b63a] px-6 py-3 text-sm font-bold text-black"
+          >
+            Sign in
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   const email = user.email.trim().toLowerCase();
-  const bookings = await getBookings(email);
+  const bookings = await getBookings(email, token);
 
   return (
     <main className="min-h-screen bg-[#020b14] px-5 py-12 text-white md:px-10 lg:px-12">
       <div className="mx-auto w-full max-w-[1440px] pt-4 lg:pt-8">
-
-        {/* Header */}
         <div className="mb-10">
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f4b63a]">
             Bookings
@@ -110,12 +190,11 @@ export default async function MyBookingsPage() {
           </h1>
 
           <p className="mt-5 max-w-[750px] text-base leading-8 text-slate-400 md:text-lg">
-            Every session you&apos;ve requested, confirmed or wrapped —
-            with receipts ready to download.
+            Every session you&apos;ve requested, confirmed or wrapped — all in
+            one place.
           </p>
         </div>
 
-        {/* Empty State */}
         {bookings.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-[#0b1118] px-6 py-16 text-center shadow-[0_20px_40px_rgba(0,0,0,0.2)]">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-3xl text-white">
@@ -127,7 +206,7 @@ export default async function MyBookingsPage() {
             </h2>
 
             <p className="mt-3 text-base text-slate-400">
-              Book a studio to see your upcoming sessions here.
+              Book a studio to see your sessions here.
             </p>
 
             <Link
@@ -138,55 +217,34 @@ export default async function MyBookingsPage() {
             </Link>
           </div>
         ) : (
-
-          /* Booking List */
           <div className="space-y-6">
             {bookings.map((booking, index) => {
-              const bookingDate =
-                booking.bookingDate || booking.date;
+              const bookingDate = booking.bookingDate || booking.date;
+              const startTime = booking.startTime || booking.time || "--:--";
 
-              const startTime =
-                booking.startTime || booking.time || "--:--";
+              const duration = Math.max(
+                0,
+                Number(booking.durationHours || booking.hours || 1),
+              );
 
-              const duration =
-                Number(booking.durationHours || booking.hours || 1);
-
-              const total =
-                Number(booking.totalAmount ?? booking.total ?? 0);
+              const total = Number(booking.totalAmount ?? booking.total ?? 0);
 
               const title =
-                booking.studioTitle ||
-                booking.title ||
-                `Booking ${index + 1}`;
+                booking.studioTitle || booking.title || `Booking ${index + 1}`;
 
-              const status = booking.status || "PENDING";
+              const status = String(booking.status || "PENDING").toUpperCase();
 
-              const studioId =
-                booking.studioId || booking.id;
+              const studioId = booking.studioId || booking.id;
+              const image = booking.image || fallbackImage;
 
-              const image =
-                booking.image ||
-                booking.studioImage ||
-                fallbackImage;
-
-              const formattedDate = prettifyDate(bookingDate);
-
-              const normalizedStatus = String(status).toUpperCase();
-
-              const isCancelled =
-                normalizedStatus === "CANCELLED";
-
-              const isPending =
-                normalizedStatus === "PENDING";
+              const isCancelled = status === "CANCELLED";
 
               return (
                 <div
                   key={booking._id || `${title}-${index}`}
                   className="rounded-2xl border border-white/10 bg-[#0b1118] p-5 shadow-[0_20px_40px_rgba(0,0,0,0.18)] transition hover:border-white/20 md:p-7"
                 >
-                  {/* Booking Details */}
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
                     <div className="flex min-w-0 flex-1 gap-5">
                       <div className="relative h-[110px] w-[110px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-slate-800 md:h-[140px] md:w-[160px]">
                         <Image
@@ -195,16 +253,27 @@ export default async function MyBookingsPage() {
                           src={image}
                           alt={title}
                           className="object-cover"
+                          unoptimized
                         />
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                       </div>
 
                       <div className="min-w-0 pt-1">
-                        <h2 className="text-lg font-bold tracking-tight text-white md:text-2xl">
-                          {title}
-                        </h2>
+                        <div className="flex flex-wrap items-center gap-3">
+                          <h2 className="text-lg font-bold tracking-tight text-white md:text-2xl">
+                            {title}
+                          </h2>
+
+                          <span
+                            className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${getStatusStyle(status)}`}
+                          >
+                            {status}
+                          </span>
+                        </div>
 
                         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-400">
-                          <span>{formattedDate}</span>
+                          <span>{prettifyDate(bookingDate)}</span>
                           <span className="text-slate-600">•</span>
                           <span>
                             {startTime} - {getEndTime(startTime, duration)}
@@ -214,43 +283,22 @@ export default async function MyBookingsPage() {
                         </div>
                       </div>
                     </div>
-
-                    <div>
-                      <span
-                        className={[
-                          "inline-flex items-center rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider",
-                          isPending
-                            ? "border-[#c89211]/50 bg-[#b57a14]/20 text-[#f4b63a]"
-                            : isCancelled
-                              ? "border-[#d14e5a]/50 bg-[#7a2638]/20 text-[#f98996]"
-                              : "border-[#36b37e]/30 bg-[#36b37e]/10 text-[#63d9a1]",
-                        ].join(" ")}
-                      >
-                        {status}
-                      </span>
-                    </div>
-
                   </div>
 
-                  {/* Footer */}
                   <div className="mt-6 flex flex-col gap-5 border-t border-white/10 pt-5 sm:flex-row sm:items-end sm:justify-between">
-
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                         Total
                       </p>
 
                       <p className="mt-2 text-3xl font-black tracking-tight text-white">
-                        ${total.toFixed(2)}
+                        ${Number.isFinite(total) ? total.toFixed(2) : "0.00"}
                       </p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-
                       {!isCancelled && booking._id && (
-                        <CancelBookingButton
-                          bookingId={booking._id}
-                        />
+                        <CancelBookingButton bookingId={booking._id} />
                       )}
 
                       {studioId && (
@@ -262,7 +310,6 @@ export default async function MyBookingsPage() {
                           <span>→</span>
                         </Link>
                       )}
-
                     </div>
                   </div>
                 </div>

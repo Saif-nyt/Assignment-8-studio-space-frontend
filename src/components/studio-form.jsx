@@ -3,9 +3,12 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
-const API_URL = `${process.env.BACKEND_URL || "http://localhost:5001"}`;
+const API_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://assignment-8-studio-space-backend.vercel.app";
 
 const CATEGORIES = [
   "Photo Studio",
@@ -276,30 +279,63 @@ export default function StudioForm({
       return;
     }
 
+    const hourlyRate = Number(form.hourlyRate);
+    const securityDeposit = Number(form.securityDeposit);
+    const maxCapacity = Number(form.maxCapacity);
+    const rating = Number(form.rating);
+
+    if (
+      !Number.isFinite(hourlyRate) ||
+      hourlyRate <= 0 ||
+      !Number.isFinite(securityDeposit) ||
+      securityDeposit < 0 ||
+      !Number.isInteger(maxCapacity) ||
+      maxCapacity < 1 ||
+      !Number.isFinite(rating) ||
+      rating < 0 ||
+      rating > 5
+    ) {
+      setError("Please enter valid pricing, capacity, and rating values.");
+      return;
+    }
+
     setSubmitting(true);
 
     const payload = {
       title: form.title.trim(),
       category: form.category,
       location: form.location.trim(),
-      hourlyRate: Number(form.hourlyRate),
-      securityDeposit: Number(form.securityDeposit),
-      maxCapacity: Number(form.maxCapacity),
+      hourlyRate,
+      securityDeposit,
+      maxCapacity,
       image: photos[0],
       images: photos,
       amenities,
       overview: form.overview.trim(),
-      rating: Number(form.rating ?? 5),
-
-      // Keep the existing owner's information when editing.
+      rating,
       ownerName: host?.name ?? studio?.ownerName ?? "",
       ownerEmail: host?.email ?? studio?.ownerEmail ?? "",
       ownerImage: host?.image ?? studio?.ownerImage ?? "",
     };
 
     try {
+      const session = await authClient.getSession();
+
+      if (!session?.data?.user) {
+        router.push("/login");
+        return;
+      }
+
+      const tokenResponse = await authClient.token();
+      const token = tokenResponse?.data?.token;
+
+      if (!token) {
+        throw new Error("Authentication token missing. Please log in again.");
+      }
+
       if (onSubmit) {
-        await onSubmit(payload);
+        await onSubmit(payload, token);
+        router.refresh();
         return;
       }
 
@@ -311,6 +347,7 @@ export default function StudioForm({
         method: isEditing ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -333,7 +370,6 @@ export default function StudioForm({
 
   return (
     <div className="w-full">
-      {/* FORM HEADER */}
       <div className="mb-9 border-b border-white/[0.07] pb-7">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-500">
           {copy.eyebrow}
@@ -349,7 +385,6 @@ export default function StudioForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-7">
-        {/* BASIC INFORMATION */}
         <Section
           number="01"
           title="The basics"
@@ -438,7 +473,6 @@ export default function StudioForm({
           </div>
         </Section>
 
-        {/* LOCATION */}
         <Section
           number="02"
           title="Location"
@@ -456,7 +490,6 @@ export default function StudioForm({
           </Field>
         </Section>
 
-        {/* PHOTOS */}
         <Section
           number="03"
           title="Studio photos"
@@ -494,7 +527,6 @@ export default function StudioForm({
               )}
             >
               <UploadIcon />
-
               {uploading ? "Preparing photos..." : "Upload from device"}
 
               <input
@@ -508,7 +540,6 @@ export default function StudioForm({
             </label>
           </div>
 
-          {/* PHOTO PREVIEW */}
           {photos.length > 0 ? (
             <div className="mt-6">
               <div className="mb-3 flex items-center justify-between">
@@ -575,7 +606,6 @@ export default function StudioForm({
           )}
         </Section>
 
-        {/* AMENITIES */}
         <Section
           number="04"
           title="Amenities & facilities"
@@ -626,7 +656,6 @@ export default function StudioForm({
           </div>
         </Section>
 
-        {/* OVERVIEW */}
         <Section
           number="05"
           title="Studio overview"
@@ -645,7 +674,6 @@ export default function StudioForm({
           </Field>
         </Section>
 
-        {/* HOST INFORMATION */}
         <Section
           number="06"
           title="Owner information"
@@ -700,7 +728,6 @@ export default function StudioForm({
           </p>
         </Section>
 
-        {/* ERROR */}
         {error && (
           <div
             role="alert"
@@ -711,7 +738,6 @@ export default function StudioForm({
           </div>
         )}
 
-        {/* SUBMIT */}
         <div className="flex flex-col gap-5 border-t border-white/[0.08] pt-7 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-white">
@@ -746,8 +772,6 @@ export default function StudioForm({
   );
 }
 
-/* STYLES */
-
 const inputClass =
   "w-full min-h-[54px] rounded-xl border border-white/[0.09] bg-[#0b0f16] px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 hover:border-white/15 focus:border-amber-500/70 focus:ring-4 focus:ring-amber-500/[0.07] sm:px-5 sm:py-3.5 sm:text-base";
 
@@ -756,8 +780,6 @@ const readOnlyInputClass =
 
 const secondaryButtonClass =
   "inline-flex min-h-[46px] items-center justify-center gap-2.5 rounded-xl border border-white/[0.1] bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white transition hover:border-amber-500/40 hover:bg-amber-500/[0.06] sm:px-5";
-
-/* REUSABLE COMPONENTS */
 
 function Section({ number, title, description, children }) {
   return (
@@ -791,21 +813,16 @@ function Field({ label, children }) {
       <span className="mb-2.5 block text-sm font-semibold text-slate-200">
         {label}
       </span>
-
       {children}
     </label>
   );
 }
 
-/* IMAGE PROCESSING */
-
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
-
     reader.readAsDataURL(file);
   });
 }
@@ -813,7 +830,6 @@ function readFileAsDataUrl(file) {
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const image = new window.Image();
-
     image.onload = () => resolve(image);
     image.onerror = reject;
     image.src = src;
@@ -825,14 +841,12 @@ async function compressImage(file) {
   const image = await loadImage(source);
 
   const maxDimension = 1600;
-
   const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
 
   const width = Math.max(1, Math.round(image.width * scale));
   const height = Math.max(1, Math.round(image.height * scale));
 
   const canvas = document.createElement("canvas");
-
   canvas.width = width;
   canvas.height = height;
 
@@ -842,7 +856,6 @@ async function compressImage(file) {
 
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, width, height);
-
   context.drawImage(image, 0, 0, width, height);
 
   let quality = 0.82;
@@ -855,8 +868,6 @@ async function compressImage(file) {
 
   return result;
 }
-
-/* ICONS */
 
 function ChevronDown() {
   return (

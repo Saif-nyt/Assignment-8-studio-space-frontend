@@ -32,10 +32,23 @@ export default function AddStudioPage() {
   if (!user) return null;
 
   async function handleCreate(payload) {
-    const res = await fetch(process.env.BACKEND_URL/add-studio || "http://localhost:5001/add-studio", {
+    const API_BASE =  process.env.NEXT_PUBLIC_BACKEND_URL || "https://assignment-8-studio-space-backend.vercel.app" || "http://localhost:5001";
+
+    let jwtToken;
+    try {
+      jwtToken = await authClient.api.getToken();
+    } catch {}
+
+    if (!jwtToken) {
+      router.push("/login");
+      return;
+    }
+
+    const res = await fetch(`${API_BASE}/add-studio`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        authorization: `Bearer ${jwtToken.token}`,
       },
       body: JSON.stringify({
         ...payload,

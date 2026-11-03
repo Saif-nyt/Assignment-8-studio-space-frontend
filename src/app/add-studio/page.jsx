@@ -32,24 +32,20 @@ export default function AddStudioPage() {
 
   if (!user) return null;
 
-  async function handleCreate(payload) {
-    const API_BASE =  process.env.NEXT_PUBLIC_BACKEND_URL  || "http://localhost:5001";
+  async function handleCreate(payload, token) {
+    const API_BASE =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
-    let jwtToken;
-    try {
-      jwtToken = await authClient.api.getToken();
-    } catch {}
-
-    if (!jwtToken) {
+    if (!token) {
       router.push("/login");
-      return;
+      throw new Error("Authentication token missing. Please log in again.");
     }
 
     const res = await fetch(`${API_BASE}/add-studio`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        authorization: `Bearer ${jwtToken.token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         ...payload,
@@ -58,8 +54,9 @@ export default function AddStudioPage() {
         ownerImage: user.image || "",
         rating: 5,
       }),
-      credentials: "include",
     });
+
+    const result = await res.json().catch(() => ({}));
 
     if (res.status === 413) {
       throw new Error(
@@ -68,7 +65,11 @@ export default function AddStudioPage() {
     }
 
     if (!res.ok) {
-      throw new Error("Could not publish the listing. Please try again.");
+      console.error("Backend publish error:", result);
+
+      throw new Error(
+        result.message || "Could not publish the listing. Please try again.",
+      );
     }
 
     router.push("/studios");
@@ -77,12 +78,11 @@ export default function AddStudioPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#080b10] px-4 py-12 text-white sm:px-6 lg:px-10 lg:py-16">
-      {/* Background Decoration */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-amber-500/[0.04] blur-[120px]" />
+
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-500/[0.03] blur-[120px]" />
 
       <div className="relative mx-auto w-full max-w-[1500px]">
-        {/* Header */}
         <div className="mb-10 lg:mb-14">
           <div className="mb-5 flex items-center gap-3">
             <span className="h-px w-9 bg-amber-500" />
@@ -106,10 +106,11 @@ export default function AddStudioPage() {
               </p>
             </div>
 
-            {/* Owner Information */}
             <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4">
               {user.image ? (
-                <Image width={100} height={100}
+                <Image
+                  width={100}
+                  height={100}
                   src={user.image}
                   alt={user.name || "Studio owner"}
                   className="h-11 w-11 rounded-full object-cover"
@@ -124,6 +125,7 @@ export default function AddStudioPage() {
                 <p className="text-sm font-semibold text-white">
                   {user.name || "Studio owner"}
                 </p>
+
                 <p className="mt-1 text-xs text-slate-500">
                   Listing as studio owner
                 </p>
@@ -132,7 +134,6 @@ export default function AddStudioPage() {
           </div>
         </div>
 
-        {/* Form Container */}
         <div className="overflow-hidden rounded-3xl border border-white/[0.09] bg-[#10151e] shadow-2xl shadow-black/30">
           <div className="border-b border-white/[0.07] px-6 py-6 sm:px-10 lg:px-12">
             <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
@@ -157,7 +158,6 @@ export default function AddStudioPage() {
           </div>
         </div>
 
-        {/* Footer Note */}
         <p className="mt-6 text-center text-xs leading-6 text-slate-500">
           Make sure your studio information is accurate before publishing.
         </p>

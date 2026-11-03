@@ -39,6 +39,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "images.freeimages.com",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
     ],
   },
   turbopack: {

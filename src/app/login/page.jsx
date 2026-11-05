@@ -8,6 +8,7 @@ import { IconArrowLeft, IconCamera, IconLock, IconMail } from "@tabler/icons-rea
 import { authClient } from "@/lib/auth-client";
 import TextField from "@/components/text-field";
 import GoogleIcon from "@/components/google-icon";
+import { showToast } from "@/lib/toast";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1600&q=85";
@@ -28,17 +29,26 @@ export default function LoginPage() {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const fail = (message) => {
+    setError(message);
+    showToast({
+      title: "Login failed",
+      description: message,
+      type: "error",
+    });
+  };
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
 
     if (!form.email.trim()) {
-      setError("Enter your email address.");
+      fail("Enter your email address.");
       return;
     }
 
     if (!form.password) {
-      setError("Enter your password.");
+      fail("Enter your password.");
       return;
     }
 
@@ -56,15 +66,20 @@ export default function LoginPage() {
             setLoading(true);
           },
           onSuccess: () => {
+            showToast({
+              title: "Welcome back",
+              description: "You are now signed in to StudioSpace.",
+              type: "success",
+            });
             router.replace("/");
           },
           onError: (ctx) => {
-            setError(ctx.error.message || "Could not log in.");
+            fail(ctx.error.message || "Could not log in.");
           },
         }
       );
     } catch {
-      setError("Could not log in. Please try again.");
+      fail("Could not log in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -82,19 +97,19 @@ export default function LoginPage() {
         },
         {
           onError: (ctx) => {
-            setError(ctx.error.message || "Google sign-in failed.");
+            fail(ctx.error.message || "Google sign-in failed.");
           },
         }
       );
     } catch {
-      setError("Google sign-in failed. Please try again.");
+      fail("Google sign-in failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleForgotPassword = () => {
-    setError("Password reset is not connected yet.");
+    fail("Password reset is not connected yet.");
   };
 
   return (

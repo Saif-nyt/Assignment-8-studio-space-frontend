@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { showToast } from "@/components/ui/toast";
-import { authClient } from "@/lib/auth-client";
-
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+import { showToast } from "@/lib/toast";
+import { API_BASE, authFetch } from "@/lib/api-auth";
 
 function IconTrash() {
   return (
@@ -37,25 +35,8 @@ export default function DeleteStudioButton({ studioId }) {
     try {
       setLoading(true);
 
-      const tokenResponse = await authClient.token();
-      const token = tokenResponse?.data?.token;
-
-      if (!token) {
-        showToast({
-          title: "Authentication required",
-          description: "Please sign in to delete your studio.",
-          type: "error",
-        });
-
-        router.push("/login");
-        return;
-      }
-
-      const res = await fetch(`${API_BASE}/delete-studio/${studioId}`, {
+      const res = await authFetch(`${API_BASE}/delete-studio/${studioId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       const data = await res.json().catch(() => ({}));

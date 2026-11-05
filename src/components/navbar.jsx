@@ -16,6 +16,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { authClient } from "@/lib/auth-client";
+import { API_BASE } from "@/lib/api-auth";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -28,7 +29,7 @@ const NAV_LINKS = [
 const ACCOUNT_LINKS = [
   { label: "Dashboard", href: "/dashboard", icon: IconLayoutGrid },
   { label: "Add New Studio", href: "/add-studio", icon: IconCirclePlus },
-  { label: "My Studio Listings", href: "/my-studios", icon: IconList },
+  { label: "My Studio Listings", href: "/my-listings", icon: IconList },
   { label: "My Bookings", href: "/my-bookings", icon: IconCalendar },
 ];
 
@@ -153,6 +154,16 @@ function Navbar() {
   async function handleLogout() {
     setOpen(false);
     setMobileOpen(false);
+
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch {
+      // Ignore backend logout failures; local sign-out still runs.
+    }
+
     await authClient.signOut();
     router.replace("/");
     router.refresh();

@@ -11,9 +11,7 @@ import {
   IconInbox,
 } from "@tabler/icons-react";
 import { authClient } from "@/lib/auth-client";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+import { API_BASE, authFetch } from "@/lib/api-auth";
 
 const emptyStats = {
   studios: 0,
@@ -38,10 +36,9 @@ export default function DashboardPage() {
     async function loadStats() {
       try {
         const [studiosRes, bookingsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/studios`, { credentials: "include" }),
-          fetch(
-            `${API_BASE_URL}/my-bookings/${encodeURIComponent(normalizedEmail)}`,
-            { credentials: "include" }
+          fetch(`${API_BASE}/studios`, { credentials: "include" }),
+          authFetch(
+            `${API_BASE}/my-bookings/${encodeURIComponent(normalizedEmail)}`
           ),
         ]);
 

@@ -4,16 +4,12 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import StudioCard from "@/components/StudioCard";
 import SkeletonCard from "@/components/SkeletonCard";
+import {
+  STUDIO_CATEGORIES,
+  normalizeCategory,
+} from "@/lib/studio-categories";
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-const CATEGORIES = [
-  "All categories",
-  "Photo Studios",
-  "Film Stages",
-  "Podcast Lounges",
-  "Music Suites",
-  "Art Workshops",
-  "Creative Offices",
-];
+const CATEGORIES = ["All categories", ...STUDIO_CATEGORIES];
 
 export default function ExploreStudiosPage() {
   return (
@@ -37,7 +33,7 @@ function ExploreStudiosPageContent() {
   const [maxRate, setMaxRate] = useState(500);
 
   useEffect(() => {
-    const categoryFromUrl = searchParams.get("category");
+    const categoryFromUrl = normalizeCategory(searchParams.get("category"));
     if (categoryFromUrl && CATEGORIES.includes(categoryFromUrl)) {
       setCategory(categoryFromUrl);
     } else {
@@ -95,6 +91,7 @@ function ExploreStudiosPageContent() {
         studio.title,
         studio.location,
         studio.category,
+        normalizeCategory(studio.category),
         studio.overview,
         ...(studio.amenities ?? []),
       ]
@@ -105,7 +102,8 @@ function ExploreStudiosPageContent() {
       const matchesSearch = searchableText.includes(query);
 
       const matchesCategory =
-        category === "All categories" || studio.category === category;
+        category === "All categories" ||
+        normalizeCategory(studio.category) === category;
 
       const matchesRate = Number(studio.hourlyRate) <= maxRate;
 

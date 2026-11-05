@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { showToast } from "@/components/ui/toast";
+import { showToast } from "@/lib/toast";
 import { authClient } from "@/lib/auth-client";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_URL ||
-  "https://assignment-8-studio-space-backend.vercel.app";
+import { API_BASE, authFetch } from "@/lib/api-auth";
 
 function getTodayDate() {
   const today = new Date();
@@ -41,7 +38,8 @@ export default function BookWorkshopNowButton({
   const [startTime, setStartTime] = useState("10:00");
   const [noteToHost, setNoteToHost] = useState("");
 
-  const totalAmount = Number(hourlyRate) * hours;
+  const rentalAmount = Number(hourlyRate) * hours;
+  const totalAmount = rentalAmount + Number(securityDeposit || 0);
 
   async function handleBookingSubmit(event) {
     event.preventDefault();
@@ -78,20 +76,6 @@ export default function BookWorkshopNowButton({
     setBookingLoading(true);
 
     try {
-      const tokenResponse = await authClient.token();
-      const token = tokenResponse?.data?.token;
-
-      if (!token) {
-        showToast({
-          title: "Authentication required",
-          description: "Your session may have expired. Please sign in again.",
-          type: "error",
-        });
-
-        router.push("/login");
-        return;
-      }
-
       const payload = {
         studioId: resolvedStudioId,
         studioTitle,
@@ -104,11 +88,10 @@ export default function BookWorkshopNowButton({
         totalAmount,
       };
 
-      const res = await fetch(`${API_BASE}/bookings`, {
+      const res = await authFetch(`${API_BASE}/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -278,9 +261,15 @@ export default function BookWorkshopNowButton({
               </div>
 
               <div className="flex items-center justify-between border-t border-zinc-800 pt-4">
-                <span className="text-xs text-zinc-400">
-                  {hours} hr × ${Number(hourlyRate).toFixed(2)}
-                </span>
+                <div className="text-xs text-zinc-400">
+                  <span>
+                    {hours} hr × ${Number(hourlyRate).toFixed(2)}
+                  </span>
+                  <span className="mt-1 block text-[11px] text-zinc-500">
+                    + ${Number(securityDeposit || 0).toFixed(2)} refundable
+                    deposit
+                  </span>
+                </div>
 
                 <span className="text-2xl font-black text-white">
                   ${totalAmount.toFixed(2)}

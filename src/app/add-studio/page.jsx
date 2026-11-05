@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import StudioForm from "@/components/studio-form";
 import { authClient } from "@/lib/auth-client";
+import { API_BASE, authFetch } from "@/lib/api-auth";
 import Image from "next/image";
 
 export default function AddStudioPage() {
@@ -32,20 +33,11 @@ export default function AddStudioPage() {
 
   if (!user) return null;
 
-  async function handleCreate(payload, token) {
-    const API_BASE =
-      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-
-    if (!token) {
-      router.push("/login");
-      throw new Error("Authentication token missing. Please log in again.");
-    }
-
-    const res = await fetch(`${API_BASE}/add-studio`, {
+  async function handleCreate(payload) {
+    const res = await authFetch(`${API_BASE}/add-studio`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         ...payload,
@@ -72,7 +64,7 @@ export default function AddStudioPage() {
       );
     }
 
-    router.push("/studios");
+    router.push("/my-listings");
     router.refresh();
   }
 

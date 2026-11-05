@@ -4,21 +4,15 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { API_BASE, authFetch } from "@/lib/api-auth";
+import { showToast } from "@/lib/toast";
+import {
+  STUDIO_CATEGORIES,
+  normalizeCategory,
+} from "@/lib/studio-categories";
 import { cn } from "@/lib/utils";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001"
-
-
-const CATEGORIES = [
-  "Photo Studio",
-  "Film Stage",
-  "Podcast Lounge",
-  "Music Suite",
-  "Workshop",
-  "Creative Studio",
-  "Production Space",
-];
+const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
 const AMENITIES = [
   "Natural Light",
@@ -91,7 +85,7 @@ function buildForm(studio) {
 
   return {
     title: text(studio.title),
-    category: text(studio.category),
+    category: normalizeCategory(text(studio.category)),
     maxCapacity: text(studio.maxCapacity),
     hourlyRate: text(studio.hourlyRate),
     securityDeposit: text(studio.securityDeposit),
@@ -146,9 +140,9 @@ export default function StudioForm({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
-  const categoryOptions = CATEGORIES.includes(form.category)
-    ? CATEGORIES
-    : [form.category, ...CATEGORIES].filter(Boolean);
+  const categoryOptions = STUDIO_CATEGORIES.includes(form.category)
+    ? STUDIO_CATEGORIES
+    : [form.category, ...STUDIO_CATEGORIES].filter(Boolean);
 
   const amenityOptions = [
     ...AMENITIES,
@@ -236,7 +230,8 @@ export default function StudioForm({
       const urls = [];
 
       for (const file of images) {
-        urls.push(await compressImage(file));
+        const compressed = await compressImage(file);
+        urls.push(await uploadToImgbb(compressed));
       }
 
       setPhotos((current) => [...current, ...urls].slice(0, 12));
@@ -303,7 +298,7 @@ export default function StudioForm({
 
     const payload = {
       title: form.title.trim(),
-      category: form.category,
+      category: normalizeCategory(form.category),
       location: form.location.trim(),
       hourlyRate,
       securityDeposit,
@@ -326,28 +321,27 @@ export default function StudioForm({
         return;
       }
 
-      const tokenResponse = await authClient.token();
-      const token = tokenResponse?.data?.token;
-
-      if (!token) {
-        throw new Error("Authentication token missing. Please log in again.");
-      }
-
       if (onSubmit) {
-        await onSubmit(payload, token);
+        await onSubmit(payload);
+        showToast({
+          title: isEditing ? "Studio updated" : "Studio published",
+          description: isEditing
+            ? "Your listing changes have been saved."
+            : "Your studio is now live on StudioSpace.",
+          type: "success",
+        });
         router.refresh();
         return;
       }
 
       const url = isEditing
-        ? `${API_URL}/studios/${studio._id}`
-        : `${API_URL}/add-studio`;
+        ? `${API_BASE}/studios/${studio._id}`
+        : `${API_BASE}/add-studio`;
 
-      const response = await fetch(url, {
+      const response = await authFetch(url, {
         method: isEditing ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -358,11 +352,26 @@ export default function StudioForm({
         throw new Error(result.message || "Could not save your studio.");
       }
 
-      router.push("/my-studios");
+      showToast({
+        title: isEditing ? "Studio updated" : "Studio published",
+        description: isEditing
+          ? "Your listing changes have been saved."
+          : "Your studio is now live on StudioSpace.",
+        type: "success",
+      });
+
+      router.push("/my-listings");
       router.refresh();
     } catch (err) {
       console.error("Studio submission error:", err);
-      setError(err?.message || "Something went wrong. Please try again.");
+      const message =
+        err?.message || "Something went wrong. Please try again.";
+      setError(message);
+      showToast({
+        title: "Could not save studio",
+        description: message,
+        type: "error",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -867,6 +876,30 @@ async function compressImage(file) {
   }
 
   return result;
+}
+
+async function uploadToImgbb(dataUrl) {
+  if (!IMGBB_API_KEY) return dataUrl;
+
+  const base64 = dataUrl.split(",")[1];
+
+  if (!base64) throw new Error("Could not read that image.");
+
+  const body = new FormData();
+  body.append("image", base64);
+
+  const response = await fetch(
+    `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
+    { method: "POST", body }
+  );
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok || !result?.data?.url) {
+    throw new Error("Image upload failed. Please try another image.");
+  }
+
+  return result.data.url;
 }
 
 function ChevronDown() {

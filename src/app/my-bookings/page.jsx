@@ -237,8 +237,6 @@ export default async function MyBookingsPage() {
               const studioId = booking.studioId || booking.id;
               const image = booking.image || fallbackImage;
 
-              const isCancelled = status === "CANCELLED";
-
               return (
                 <div
                   key={booking._id || `${title}-${index}`}
@@ -297,7 +295,7 @@ export default async function MyBookingsPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                      {!isCancelled && booking._id && (
+                      {status === "PENDING" && booking._id && (
                         <CancelBookingButton bookingId={booking._id} />
                       )}
 

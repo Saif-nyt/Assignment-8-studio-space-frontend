@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { showToast } from "@/components/ui/toast";
-import { authClient } from "@/lib/auth-client";
-
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+import { showToast } from "@/lib/toast";
+import { API_BASE, authFetch } from "@/lib/api-auth";
 
 export default function CancelBookingButton({ bookingId }) {
   const router = useRouter();
@@ -16,18 +14,8 @@ export default function CancelBookingButton({ bookingId }) {
     setLoading(true);
 
     try {
-      const tokenResponse = await authClient.token();
-      const token = tokenResponse?.data?.token;
-
-      if (!token) {
-        throw new Error("Your session has expired. Please sign in again.");
-      }
-
-      const res = await fetch(`${API_BASE}/my-booking/${bookingId}`, {
+      const res = await authFetch(`${API_BASE}/my-booking/${bookingId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
 
       const data = await res.json().catch(() => ({}));

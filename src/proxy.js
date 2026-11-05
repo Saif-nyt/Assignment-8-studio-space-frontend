@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import BookWorkshopNowButton from "./components/BookWorkshopNowButton";
-import { se } from "date-fns/locale";
 import { headers } from "next/headers";
 // This function can be marked `async` if using `await` inside
 export async function proxy(request) {
@@ -17,6 +15,7 @@ export async function proxy(request) {
 
 export const config = {
   matcher: [
+    "/my-listings/:path*",
     "/my-studios/:path*",
     "/my-bookings/:path*",
     "/add-studio/:path*",

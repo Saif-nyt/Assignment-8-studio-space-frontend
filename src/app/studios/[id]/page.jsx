@@ -1,57 +1,33 @@
-import Image from "next/image";
 import BookWorkshopNowButton from "../../../components/BookWorkshopNowButton";
-import { auth } from "../../../lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import StudioGallery from "../../../components/StudioGallery";
+import StudioReviews from "../../../components/StudioReviews";
+import { normalizeCategory } from "../../../lib/studio-categories";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function StudioDetailsPage({ params }) {
   const { id } = await params;
 
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
+  const res = await fetch(`${API_BASE_URL}/studios/${id}`, {
+    method: "GET",
+    cache: "no-store",
+  });
 
+  if (res.status === 404) {
+    notFound();
+  }
 
-
-
-const requestHeaders = await headers();
-
-const session = await auth.api.getSession({
-  headers: requestHeaders,
-  query: {
-    disableCookieCache: true,
-  },
-});
-
-if (!session) {
-  redirect("/login");
-}
-
-const jwtToken = await auth.api.getToken({
-  headers: requestHeaders,
-});
-
-if (!jwtToken?.token) {
-  redirect("/login");
-}
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-const res = await fetch(`${API_BASE_URL}/studios/${id}`, {
-  method: "GET",
-  headers: {
-    Authorization: `Bearer ${jwtToken.token}`,
-  },
-  cache: "no-store",
-});
-
-if (!res.ok) {
-  throw new Error("Failed to fetch studio details");
-}
-
+  if (!res.ok) {
+    throw new Error("Failed to fetch studio details");
+  }
 
   const studio = await res.json();
   const title = studio.title || "Studio Workspace";
-  const category = studio.category || "Studio";
+  const category = normalizeCategory(studio.category) || "Studio";
   const rating = studio.rating || 5.0;
   const reviewCount = studio.reviewCount || 1;
   const location = studio.location || "Location not specified";
@@ -60,18 +36,26 @@ if (!res.ok) {
   const maxCapacity = studio.maxCapacity ? `${studio.maxCapacity} people` : "Flexible";
   const overview = studio.overview || "No overview provided.";
   const amenities = studio.amenities || [];
-  const reviews = studio.reviews || [{ name: "Verified Creator", date: "Nov 2, 2026", rating: 5, comment: "Amazing space with great equipment and environment." }];
-  const mainImage = studio.image || "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&q=80&w=1600";
+  const reviews =
+    Array.isArray(studio.reviews) && studio.reviews.length > 0
+      ? studio.reviews
+      : [
+          {
+            name: "Verified Creator",
+            date: "Nov 2, 2026",
+            rating: 5,
+            comment:
+              "Amazing space with great equipment and environment.",
+          },
+        ];
+  const galleryImages = [studio.image, ...(studio.images || [])].filter(
+    Boolean
+  );
 
   return (
     <div className="min-h-screen bg-[#090d14] pb-24 text-slate-100">
       <div className="mx-auto max-w-7xl px-6 pt-8">
-        <div className="relative mb-10 overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900 shadow-2xl">
-          <div className="relative h-[480px] w-full md:h-[540px]">
-            <Image width={1600} height={900} src={mainImage} alt={title} className="h-full w-full object-cover" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090d14]/80 via-transparent to-black/30" />
-          </div>
-        </div>
+        <StudioGallery images={galleryImages} title={title} />
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
           <div className="space-y-10 lg:col-span-8">
@@ -146,24 +130,7 @@ if (!res.ok) {
               <p className="text-sm font-normal text-slate-400">Wide open — no confirmed bookings yet.</p>
             </div>
 
-            <div className="space-y-6 border-t border-slate-800/80 pt-4">
-              <h2 className="text-xl font-bold text-white">Reviews ({reviews.length})</h2>
-              <div className="space-y-4 rounded-2xl border border-slate-800/80 bg-[#111622] p-6">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <svg key={index} className="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                  ))}
-                </div>
-                <textarea rows={3} placeholder="How was your session?" className="w-full resize-none rounded-xl border border-slate-800 bg-[#181f2e] p-3.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-amber-500" />
-                <div className="flex justify-start">
-                  <button type="button" className="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-bold text-black transition hover:bg-amber-500">
-                    Submit review
-                  </button>
-                </div>
-              </div>
-            </div>
+            <StudioReviews studioId={id} reviews={reviews} />
           </div>
 
           <aside className="lg:col-span-4">

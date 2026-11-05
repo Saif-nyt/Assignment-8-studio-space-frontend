@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import TextField from "@/components/text-field";
 import GoogleIcon from "@/components/google-icon";
+import { showToast } from "@/lib/toast";
 import {
   IconArrowLeft,
   IconCamera,
@@ -49,27 +50,36 @@ export default function SignUpPage() {
     rule.test(form.password)
   );
 
+  const fail = (message) => {
+    setError(message);
+    showToast({
+      title: "Registration failed",
+      description: message,
+      type: "error",
+    });
+  };
+
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
 
     if (!form.name.trim()) {
-      setError("Enter your name to create an account.");
+      fail("Enter your name to create an account.");
       return;
     }
 
     if (!form.email.trim()) {
-      setError("Enter your email address.");
+      fail("Enter your email address.");
       return;
     }
 
     if (!passwordValid) {
-      setError("Your password does not meet all the requirements below.");
+      fail("Your password does not meet all the requirements below.");
       return;
     }
 
     if (form.password !== form.confirmPassword) {
-      setError("Your passwords do not match.");
+      fail("Your passwords do not match.");
       return;
     }
 
@@ -89,15 +99,20 @@ export default function SignUpPage() {
             setLoading(true);
           },
           onSuccess: () => {
+            showToast({
+              title: "Account created",
+              description: "Welcome to StudioSpace. Your account is ready.",
+              type: "success",
+            });
             router.replace("/");
           },
           onError: (ctx) => {
-            setError(ctx.error.message || "Could not create your account.");
+            fail(ctx.error.message || "Could not create your account.");
           },
         }
       );
     } catch {
-      setError("Could not create your account. Please try again.");
+      fail("Could not create your account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -115,12 +130,12 @@ export default function SignUpPage() {
         },
         {
           onError: (ctx) => {
-            setError(ctx.error.message || "Google sign-up failed.");
+            fail(ctx.error.message || "Google sign-up failed.");
           },
         }
       );
     } catch {
-      setError("Google sign-up failed. Please try again.");
+      fail("Google sign-up failed. Please try again.");
     } finally {
       setLoading(false);
     }

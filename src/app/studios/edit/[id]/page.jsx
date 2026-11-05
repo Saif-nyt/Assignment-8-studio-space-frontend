@@ -65,7 +65,7 @@ export default async function EditStudioPage({ params }) {
     (studio.ownerEmail || "").trim().toLowerCase() !==
     user.email.trim().toLowerCase()
   ) {
-    redirect("/my-studios");
+    redirect("/my-listings");
   }
 
   return (

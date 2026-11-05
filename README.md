@@ -5,6 +5,18 @@
 The platform also gives studio owners an opportunity to showcase their spaces, manage listings, and connect with creators looking for a place to bring their ideas to life.
 
 🔗 **Live Website:** https://assignment-8-studio-space-frontend.vercel.app/
+🔗 **Live API:** https://assignment-8-studio-space-backend.vercel.app/
+
+---
+
+## Test Account
+
+Use these credentials to review the authenticated flows (dashboard, listings and bookings):
+
+| Field | Value |
+|---|---|
+| Email | `examiner@studios.com` |
+| Password | `Examiner123` |
 
 ---
 
@@ -27,7 +39,10 @@ The goal is simple: make finding the right creative space easier for everyone.
 - **Ownership Authorization:** Users can only manage their own studio listings and bookings.
 - **Booking Conflict Prevention:** Validate existing reservations to prevent overlapping bookings.
 - **Responsive Interface:** Optimized layouts for desktop, tablet, and mobile devices.
-- **Interactive User Experience:** Custom confirmation dialogs, toast notifications, loading states, and empty states.
+- **Interactive User Experience:** Swiper-powered hero slider, custom confirmation dialogs, Sonner toast notifications, loading states, and empty states.
+- **Studio Details:** Photo gallery, amenities, host information and a review section with star ratings.
+- **Newsletter & Legal Pages:** Footer newsletter signup, popular category shortcuts, and dedicated privacy and terms pages.
+- **Custom 404 & Loading Screens:** Branded not-found and route loading states.
 - **Theme Customization:** Switch between light and dark appearances.
 
 ## Technology Stack
@@ -58,8 +73,8 @@ Make sure you have installed:
 ### 1. Clone the Client Repository
 
 ```bash
-git clone YOUR_CLIENT_REPOSITORY_URL
-cd YOUR_CLIENT_PROJECT_FOLDER
+git clone https://github.com/Saif-nyt/Assignment-8-studio-space-frontend.git
+cd Assignment-8-studio-space-frontend
 ```
 
 ### 2. Install Dependencies
@@ -82,6 +97,9 @@ MONGODB_DB=Studio-space
 
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Optional: uploads use imgBB when this key is set, otherwise images are stored as base64 data URLs.
+NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
 ```
 
 Use the actual environment variables required by your project. Never commit real credentials or secrets to GitHub.
@@ -99,8 +117,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Clone the server repository separately:
 
 ```bash
-git clone YOUR_SERVER_REPOSITORY_URL
-cd YOUR_SERVER_PROJECT_FOLDER
+git clone https://github.com/Saif-nyt/Assignment-8-studio-space-Backend.git
+cd Assignment-8-studio-space-Backend
 npm install
 ```
 
@@ -118,6 +136,8 @@ Start the backend:
 npm start
 ```
 
+The backend listens on `http://localhost:5001` by default. Run it alongside the frontend so studio discovery, details, bookings and dashboard statistics can load.
+
 Make sure the frontend and backend environment variables match your local configuration.
 
 ## Authentication & Security
@@ -128,8 +148,10 @@ Security measures include:
 
 - Authenticated access to private routes.
 - JWT verification on protected API endpoints.
+- Short-lived JWT stored in an HTTP-only, secure cookie (`studio_jwt`) during API calls, with a Bearer token fallback.
 - Server-side ownership validation before modifying or deleting resources.
-- Server-side booking validation.
+- Server-side booking validation and overlap detection.
+- Bookings are created with a `pending` status, and cancellation soft-updates the record to `cancelled`.
 - Environment-based configuration for sensitive credentials.
 
 ## Booking Workflow
